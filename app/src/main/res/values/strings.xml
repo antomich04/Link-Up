@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Link Up</string>
+    <string name="welcome_text">Link Up</string>
+    <string name="login">LOG IN</string>
+    <string name="signup">SIGN UP</string>
+    <string name="name_hint">Full Name</string>
+    <string name="username_hint">Username</string>
+    <string name="username_taken">Username already exists!</string>
+    <string name="user_not_found">User not found!</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password (at least 6 characters)</string>
+    <string name="password_hint_login">Password</string>
+    <string name="wrong_password">Wrong password!</string>
+    <string name="username_error">Username can\'t be empty!</string>
+    <string name="invalid_username">Invalid username!</string>
+    <string name="password_error">Password can\'t be empty!</string>
+    <string name="small_password_error">Password is too short!</string>
+    <string name="name_error">Name can\'t be empty!</string>
+    <string name="email_error">Email can\'t be empty!</string>
+    <string name="back_button">BACK</string>
+    <string name="home_page">HOME</string>
+    <string name="friends_page">FRIENDS</string>
+    <string name="requests_page">FRIEND REQUESTS</string>
+    <string name="friend_requests_label">Incoming Friend Requests</string>
+    <string name="options_page">OPTIONS</string>
+    <string name="logout">LOGOUT</string>
+    <string name="change_picture">CHANGE PICTURE</string>
+    <string name="openDrawer">open</string>
+    <string name="closeDrawer">close</string>
+    <string name="send_request_button">SEND REQUEST</string>
+</resources>
