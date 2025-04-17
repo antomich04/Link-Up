@@ -4289,6 +4289,8 @@ string path_password_eye_mask_strike_through
 string path_password_eye_mask_visible
 string path_password_strike_through
 string project_id
+string request_already_sent
+string request_failed
 string requests_page
 string search_menu_title
 string searchbar_scrolling_view_behavior

@@ -54,15 +54,16 @@ class AddFriend : Fragment(){
             parentFragmentManager.popBackStack()
         }
 
-        lifecycleScope.launch{
+        lifecycleScope.launch {
             val loggedinUser = userViewModel.getLoggedInUser()
-            sendRequestBtn.setOnClickListener{
+
+            sendRequestBtn.setOnClickListener {
                 val friendUsername = friendUsernameTxt.text.toString()
                 if(friendUsername.isEmpty()){
-                    wrongUsername.text = resources.getString(R.string.username_error)
+                    wrongUsername.text = getString(R.string.username_error)
                     return@setOnClickListener
-                }else if(loggedinUser!!.username == friendUsername){
-                    wrongUsername.text = resources.getString(R.string.invalid_username)
+                }else if(loggedinUser!!.username==friendUsername){
+                    wrongUsername.text = getString(R.string.invalid_username)
                     return@setOnClickListener
                 }else{
                     wrongUsername.text = ""
@@ -70,15 +71,35 @@ class AddFriend : Fragment(){
 
                 client.checkIfUsernameExists(friendUsername, onSuccess = { exists ->
                     if(!exists){
-                        wrongUsername.text = resources.getString(R.string.user_not_found)
-                        return@checkIfUsernameExists
-                    }else{
-                        client.sendFriendRequest(loggedinUser.username, friendUsername, onSuccess = {}, onFailure = {})
                         requireActivity().runOnUiThread {
-                            parentFragmentManager.popBackStack()
+                            wrongUsername.text = getString(R.string.user_not_found)
                         }
+                    }else{
+                        client.sendFriendRequest(
+                            loggedinUser.username,
+                            friendUsername,
+                            onSuccess = {
+                                requireActivity().runOnUiThread {
+                                    parentFragmentManager.popBackStack()
+                                }
+                            },
+                            onFailure = { exception ->
+                                requireActivity().runOnUiThread {
+                                    wrongUsername.text = when(exception.message){
+                                        "Friend request already sent or already friends" ->
+                                            getString(R.string.request_already_sent)
+                                        else ->
+                                            getString(R.string.request_failed)
+                                    }
+                                }
+                            }
+                        )
                     }
-                }, onFailure = {})
+                }, onFailure = {
+                    requireActivity().runOnUiThread {
+                        wrongUsername.text = getString(R.string.request_failed)
+                    }
+                })
             }
         }
 

@@ -238,6 +238,8 @@ string password_error
 string password_hint
 string password_hint_login
 string project_id
+string request_already_sent
+string request_failed
 string requests_page
 string send_request_button
 string signup

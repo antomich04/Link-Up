@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?colorSurface"
     tools:context=".activities.SignUpActivity">
         <EditText
             android:id="@+id/nameInput"
@@ -18,7 +19,7 @@
             android:padding="16dp"
             app:layout_constraintBottom_toTopOf="@+id/email"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <EditText
             android:id="@+id/email"
@@ -32,7 +33,7 @@
             android:padding="16dp"
             app:layout_constraintBottom_toTopOf="@+id/usernameInput"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <EditText
             android:id="@+id/usernameInput"
@@ -46,7 +47,7 @@
             android:padding="16dp"
             app:layout_constraintBottom_toTopOf="@+id/passwordInput"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <EditText
             android:id="@+id/passwordInput"
@@ -61,7 +62,7 @@
             android:padding="16dp"
             app:layout_constraintBottom_toTopOf="@+id/submitSignupBtn"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <Button
             android:id="@+id/submitSignupBtn"
@@ -73,7 +74,7 @@
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/backBtn"
@@ -86,7 +87,7 @@
         app:layout_constraintBottom_toTopOf="@+id/nameInput"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.146"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/nameError"
@@ -101,7 +102,7 @@
         app:layout_constraintHorizontal_bias="0.221"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/nameInput"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"/>
 
     <TextView
         android:id="@+id/passwordError2"
@@ -115,7 +116,7 @@
         app:layout_constraintBottom_toTopOf="@+id/submitSignupBtn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/passwordInput"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"/>
 
     <TextView
         android:id="@+id/emailError"
@@ -130,7 +131,7 @@
         app:layout_constraintHorizontal_bias="0.218"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/email"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"/>
 
     <TextView
         android:id="@+id/usernameError2"
@@ -145,5 +146,5 @@
         app:layout_constraintHorizontal_bias="0.257"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usernameInput"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

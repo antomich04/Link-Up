@@ -28,4 +28,6 @@
     <string name="openDrawer">open</string>
     <string name="closeDrawer">close</string>
     <string name="send_request_button">SEND REQUEST</string>
+    <string name="request_already_sent">Friend request already sent!</string>
+    <string name="request_failed">Failed to send friend request. Please try again.</string>
 </resources>

@@ -4288,6 +4288,8 @@ int string path_password_eye_mask_strike_through 0x7f1200cb
 int string path_password_eye_mask_visible 0x7f1200cc
 int string path_password_strike_through 0x7f1200cd
 int string project_id 0x7f1200ce
+int string request_already_sent 0x7f1200e1
+int string request_failed 0x7f1200e2
 int string requests_page 0x7f1200cf
 int string search_menu_title 0x7f1200d0
 int string searchbar_scrolling_view_behavior 0x7f1200d1

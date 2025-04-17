@@ -4,10 +4,6 @@
         "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\drawable\\logout.xml"
     },
     {
-        "merged": "com.example.linkup.app-debug-49:/layout-land_login_activity.xml.flat",
-        "source": "com.example.linkup.app-main-51:/layout-land/login_activity.xml"
-    },
-    {
         "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\drawable_reject.xml.flat",
         "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\drawable\\reject.xml"
     },
@@ -60,12 +56,12 @@
         "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\drawable\\new_message.xml"
     },
     {
-        "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\layout_add_friend.xml.flat",
-        "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\layout\\add_friend.xml"
-    },
-    {
         "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\layout_signup_activity.xml.flat",
         "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\layout\\signup_activity.xml"
+    },
+    {
+        "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\layout_add_friend.xml.flat",
+        "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\layout\\add_friend.xml"
     },
     {
         "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
@@ -76,8 +72,16 @@
         "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\mipmap-xhdpi\\ic_launcher_round.webp"
     },
     {
+        "merged": "com.example.linkup.app-debug-49:/layout_signup_activity.xml.flat",
+        "source": "com.example.linkup.app-main-51:/layout/signup_activity.xml"
+    },
+    {
         "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
         "source": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-main-51:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "com.example.linkup.app-debug-49:/layout_home_page_activity.xml.flat",
+        "source": "com.example.linkup.app-main-51:/layout/home_page_activity.xml"
     },
     {
         "merged": "C:\\Users\\User\\.gradle\\daemon\\8.11.1\\com.example.linkup.app-debug-49:\\drawable_back.xml.flat",

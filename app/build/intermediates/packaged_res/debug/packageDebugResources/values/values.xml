@@ -167,6 +167,8 @@
     <string name="password_hint">Password (at least 6 characters)</string>
     <string name="password_hint_login">Password</string>
     <string name="project_id" translatable="false">link-up-9e9da</string>
+    <string name="request_already_sent">Friend request already sent!</string>
+    <string name="request_failed">Failed to send friend request. Please try again.</string>
     <string name="requests_page">FRIEND REQUESTS</string>
     <string name="send_request_button">SEND REQUEST</string>
     <string name="signup">SIGN UP</string>
@@ -224,6 +226,8 @@
         <item name="colorSurfaceContainer">@color/md_theme_surfaceContainer</item>
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
     <style name="ThemeOverlay.AppTheme.HighContrast" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/md_theme_primary_highContrast</item>

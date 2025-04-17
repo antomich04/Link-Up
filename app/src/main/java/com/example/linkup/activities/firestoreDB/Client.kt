@@ -1,5 +1,7 @@
 package com.example.linkup.activities.firestoreDB
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 
@@ -93,22 +95,71 @@ class Client{
         val senderRef = userRef.document(sender)
         val receiverRef = userRef.document(receiver)
 
-        val requestDoc = friendRequestRef.document()  //Generates a new document with unique ID
-        val friendRequest = FriendRequest(
-            sender = senderRef,
-            receiver = receiverRef,
-            status = FriendRequestStatus.PENDING.value
-        )
+        //Checks if a request already exists or it is already accepted
+        friendRequestRef
+            .whereEqualTo("sender", senderRef)
+            .whereEqualTo("receiver", receiverRef)
+            .whereIn("status", listOf(
+                FriendRequestStatus.PENDING.value,
+                FriendRequestStatus.ACCEPTED.value
+            ))
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if(!querySnapshot.isEmpty){
+                    //A request already exists
+                    onFailure(Exception("Friend request already sent or already friends"))
+                }else{
+                    //No request exists
+                    val requestDoc = friendRequestRef.document()    //Generates a new document ID
+                    val friendRequest = FriendRequest(
+                        sender = senderRef,
+                        receiver = receiverRef,
+                        status = FriendRequestStatus.PENDING.value
+                    )
 
-        requestDoc.set(friendRequest)
-            .addOnSuccessListener {
-                val generatedId = requestDoc.id
-                onSuccess(generatedId)
+                    requestDoc.set(friendRequest)
+                        .addOnSuccessListener {
+                            val generatedId = requestDoc.id
+                            onSuccess(generatedId)
+                        }
+                        .addOnFailureListener { exception ->
+                            onFailure(exception)
+                        }
+                }
             }
             .addOnFailureListener { exception ->
                 onFailure(exception)
             }
     }
+
+    fun getIncomingFriendRequests(username: String): LiveData<List<FriendRequest>> {
+        val liveData = MutableLiveData<List<FriendRequest>>()
+        val receiverRef = userRef.document(username)
+
+        friendRequestRef
+            .whereEqualTo("receiver", receiverRef)
+            .whereEqualTo("status", FriendRequestStatus.PENDING.value)
+            .addSnapshotListener { snapshot, exception ->
+                if(exception!=null){
+                    liveData.postValue(emptyList())
+                    return@addSnapshotListener
+                }
+
+                if(snapshot!=null && !snapshot.isEmpty){
+                    val requests = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(FriendRequest::class.java)?.apply {
+                            id = doc.id //Sets the document ID as the previously generated ID
+                        }
+                    }
+                    liveData.postValue(requests)
+                }else{
+                    liveData.postValue(emptyList())
+                }
+            }
+
+        return liveData
+    }
+
 
     //Accepts a friend request by updating its status to "accepted"
     fun acceptFriendRequest(requestId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
@@ -124,7 +175,6 @@ class Client{
             .update("status", FriendRequestStatus.REJECTED.value)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { exception -> onFailure(exception) }
-
     }
 
 }

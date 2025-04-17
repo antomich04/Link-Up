@@ -7,10 +7,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:background="?colorSurface"
     tools:context=".activities.HomePageActivity">
 
     <!-- Main Content Layout -->
-
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/mainContent"
         android:layout_width="match_parent"
@@ -18,7 +18,6 @@
         android:fitsSystemWindows="true">
 
         <!-- Toolbar (should not be overlapped by status bar) -->
-
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -32,10 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="?attr/actionBarSize"
-            android:background="?colorSurface"
-            />
-
-
+            android:background="?colorSurface"/>
         <!-- Main Screen Content -->
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
