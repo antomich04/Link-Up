@@ -12,17 +12,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:elevation="6dp"
         app:srcCompat="@drawable/add_friend" />
-
-    <TextView
-        android:id="@+id/helloText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Friends!"
-        android:textSize="32sp"
-        android:layout_gravity="center" />
-
 </FrameLayout>
