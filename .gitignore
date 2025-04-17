@@ -14,3 +14,5 @@ local.properties
 app/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
 app/build/intermediates/merged_res/debug/mergeDebugResources/values_values.arsc.flat
 app/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+app/build/intermediates/incremental/debug/mergeDebugResources/merger.xml
+app/build/generated/res/processDebugGoogleServices/values/values.xml
