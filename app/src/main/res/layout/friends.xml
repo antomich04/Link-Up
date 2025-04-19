@@ -7,6 +7,12 @@
     android:padding="32dp"
     android:background="?colorSurface">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvFriendsList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="72dp"/>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addFriendBtn"
         android:layout_width="wrap_content"

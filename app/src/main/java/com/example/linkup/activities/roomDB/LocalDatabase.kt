@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [LocalUser::class, UserPreferences::class], version = 1, exportSchema = false)
+@Database(entities = [LocalUser::class, UserPreferences::class], version = 2, exportSchema = false)
 abstract class LocalDatabase : RoomDatabase(){
     abstract fun userDao(): UserDao
 
@@ -20,10 +20,10 @@ abstract class LocalDatabase : RoomDatabase(){
             }
             synchronized(this) {
                 val newInstance = Room.databaseBuilder(
-                    context.applicationContext,
-                    LocalDatabase::class.java,
-                    "app_user_db"
-                ).build()
+                                context.applicationContext,
+                                LocalDatabase::class.java,
+                                "app_user_db"
+                            ).fallbackToDestructiveMigration(true).build()
                 INSTANCE = newInstance
                 return newInstance
             }

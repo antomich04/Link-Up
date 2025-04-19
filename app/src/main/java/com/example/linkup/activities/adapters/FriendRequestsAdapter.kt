@@ -10,6 +10,7 @@ import com.example.linkup.activities.firestoreDB.FriendRequest
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class FriendRequestsAdapter(private var friendRequests : List<FriendRequest>,
+                            private val onAccept: (String) -> Unit,
                             private val onReject: (String) -> Unit) : RecyclerView.Adapter<FriendRequestsAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder{
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -18,7 +19,7 @@ class FriendRequestsAdapter(private var friendRequests : List<FriendRequest>,
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(friendRequests[position], onReject)
+        holder.bind(friendRequests[position], onAccept, onReject)
     }
 
     override fun getItemCount(): Int {
@@ -35,11 +36,11 @@ class FriendRequestsAdapter(private var friendRequests : List<FriendRequest>,
         private val acceptBtn: FloatingActionButton = view.findViewById(R.id.acceptBtn)
         private val rejectBtn: FloatingActionButton = view.findViewById(R.id.rejectBtn)
 
-        fun bind(friendRequest: FriendRequest, onReject: (String) -> Unit) {
+        fun bind(friendRequest: FriendRequest, onAccept: (String) -> Unit, onReject: (String) -> Unit) {
             usernameTxt.text = friendRequest.sender!!.id
 
             acceptBtn.setOnClickListener {
-                //client.acceptFriendRequest()
+                onAccept(friendRequest.id)
             }
 
             rejectBtn.setOnClickListener {

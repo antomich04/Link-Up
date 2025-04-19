@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "User_Preferences",
-        foreignKeys = [ForeignKey(entity = LocalUser::class,parentColumns = ["username"],childColumns = ["username"], onDelete = ForeignKey.CASCADE)])
+        foreignKeys = [ForeignKey(entity = LocalUser::class,parentColumns = ["username"],childColumns = ["username"], onDelete = ForeignKey.CASCADE, onUpdate = ForeignKey.CASCADE)])
 data class UserPreferences(
     @PrimaryKey
     var username: String,

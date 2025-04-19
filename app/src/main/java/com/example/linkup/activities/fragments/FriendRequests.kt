@@ -31,19 +31,29 @@ class FriendRequests : Fragment() {
         val view = inflater.inflate(R.layout.friend_requests, container, false)
 
         val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
-        toolbar?.setTitle("FRIEND REQUESTS")
+        toolbar?.setTitle("INCOMING FRIEND REQUESTS")
 
         client = Client()
 
         rvFriendRequests = view?.findViewById(R.id.rvFriendRequests)!!
         rvFriendRequests.layoutManager = LinearLayoutManager(requireContext())
-        adapter = FriendRequestsAdapter(emptyList()) { requestId ->
-            client.rejectFriendRequest(
-                requestId,
-                onSuccess = {},
-                onFailure = { ex -> }
-            )
-        }
+        adapter = FriendRequestsAdapter(
+            emptyList(),
+            onAccept = { requestId ->
+                client.acceptFriendRequest(
+                    requestId,
+                    onSuccess = {},
+                    onFailure = {ex -> }
+                )
+            },
+            onReject = { requestId ->
+                client.rejectFriendRequest(
+                    requestId,
+                    onSuccess = {},
+                    onFailure = {ex -> }
+                )
+            }
+        )
         rvFriendRequests.adapter = adapter
 
         //Initializes Room Database + ViewModel

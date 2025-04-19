@@ -9,6 +9,8 @@ class Client{
     private val db = Firebase.firestore
     private val userRef = db.collection("Users")
     private val friendRequestRef = db.collection("FriendRequests")
+    private val friendshipRef = db.collection("Friendships")
+
 
     fun insertUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
         val docRef = userRef.document(user.username)
@@ -91,47 +93,56 @@ class Client{
             }
     }
 
-    fun sendFriendRequest(sender: String, receiver: String, onSuccess: (String) -> Unit,onFailure: (Exception) -> Unit) {
+    fun sendFriendRequest(sender: String, receiver: String, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
         val senderRef = userRef.document(sender)
         val receiverRef = userRef.document(receiver)
 
-        //Checks if a request already exists or it is already accepted
-        friendRequestRef
+        //Checks if there is a pending or accepted request
+        val checkSenderQuery = friendRequestRef
             .whereEqualTo("sender", senderRef)
             .whereEqualTo("receiver", receiverRef)
-            .whereIn("status", listOf(
-                FriendRequestStatus.PENDING.value,
-                FriendRequestStatus.ACCEPTED.value
-            ))
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                if(!querySnapshot.isEmpty){
-                    //A request already exists
-                    onFailure(Exception("Friend request already sent or already friends"))
-                }else{
-                    //No request exists
-                    val requestDoc = friendRequestRef.document()    //Generates a new document ID
-                    val friendRequest = FriendRequest(
-                        sender = senderRef,
-                        receiver = receiverRef,
-                        status = FriendRequestStatus.PENDING.value
-                    )
+            .whereIn("status", listOf(FriendRequestStatus.PENDING.value, FriendRequestStatus.ACCEPTED.value))
 
-                    requestDoc.set(friendRequest)
-                        .addOnSuccessListener {
-                            val generatedId = requestDoc.id
-                            onSuccess(generatedId)
-                        }
-                        .addOnFailureListener { exception ->
-                            onFailure(exception)
-                        }
+        val checkReceiverQuery = friendRequestRef
+            .whereEqualTo("sender", receiverRef)
+            .whereEqualTo("receiver", senderRef)
+            .whereIn("status", listOf(FriendRequestStatus.PENDING.value, FriendRequestStatus.ACCEPTED.value))
+
+        //Checks both directions (sender and receiver)
+        checkSenderQuery.get().addOnSuccessListener { senderSnapshot ->
+            if(senderSnapshot.isEmpty){
+                checkReceiverQuery.get().addOnSuccessListener { receiverSnapshot ->
+                    if(receiverSnapshot.isEmpty){
+                        // No request exists — creates a new one
+                        val requestDoc = friendRequestRef.document()
+                        val friendRequest = FriendRequest(
+                            sender = senderRef,
+                            receiver = receiverRef,
+                            status = FriendRequestStatus.PENDING.value
+                        )
+
+                        requestDoc.set(friendRequest)
+                            .addOnSuccessListener {
+                                onSuccess(requestDoc.id)
+                            }
+                            .addOnFailureListener { exception ->
+                                onFailure(exception)
+                            }
+                    }else{
+                        //A request or friendship already exists from the receiver
+                        onFailure(Exception("Friend request already sent or already friends"))
+                    }
                 }
+            }else{
+                //A request or friendship already exists from the sender
+                onFailure(Exception("Friend request already sent or already friends"))
             }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-            }
+        }.addOnFailureListener { exception ->
+            onFailure(exception)
+        }
     }
 
+    //Gets the list of incoming friend requests of logged in user
     fun getIncomingFriendRequests(username: String): LiveData<List<FriendRequest>> {
         val liveData = MutableLiveData<List<FriendRequest>>()
         val receiverRef = userRef.document(username)
@@ -160,13 +171,96 @@ class Client{
         return liveData
     }
 
+    //Gets the list of friends of logged in user
+    fun getFriendsList(username: String): LiveData<List<Friendship>> {
+        val liveData = MutableLiveData<List<Friendship>>()
+        val userRef = userRef.document(username)
+        val allFriends = mutableListOf<Friendship>()
 
-    //Accepts a friend request by updating its status to "accepted"
+        //Query for friendships where the user is the sender
+        val sentFriendQuery = friendshipRef
+            .whereEqualTo("userUsername", userRef)
+
+        //Query for friendships where the user is the receiver
+        val receivedFriendQuery = friendshipRef
+            .whereEqualTo("friendUsername", userRef)
+
+        //Query for both directions
+        sentFriendQuery.addSnapshotListener { snapshot, exception ->
+            if(exception!=null){
+                liveData.postValue(emptyList())
+                return@addSnapshotListener
+            }
+
+            snapshot?.let{
+                val sentFriends = it.documents.mapNotNull { doc ->
+                    doc.toObject(Friendship::class.java)?.apply {
+                        id = doc.id
+                    }
+                }
+                allFriends.removeAll { it.userUsername == userRef }
+                allFriends.addAll(sentFriends)
+                liveData.postValue(allFriends.toList())
+            }
+        }
+
+        receivedFriendQuery.addSnapshotListener { snapshot, exception ->
+            if(exception != null){
+                liveData.postValue(emptyList())
+                return@addSnapshotListener
+            }
+
+            snapshot?.let{
+                val receivedFriends = it.documents.mapNotNull { doc ->
+                    doc.toObject(Friendship::class.java)?.apply {
+                        id = doc.id
+                    }
+                }
+                allFriends.removeAll { it.friendUsername == userRef }
+                allFriends.addAll(receivedFriends)
+                liveData.postValue(allFriends.toList())
+            }
+        }
+        return liveData
+    }
+
+
+
+    //Accepts a friend request by updating its status to "accepted" and creates a new 'friendship'
     fun acceptFriendRequest(requestId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         friendRequestRef.document(requestId)
-            .update("status", FriendRequestStatus.ACCEPTED.value)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { exception -> onFailure(exception) }
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val friendRequest = documentSnapshot.toObject(FriendRequest::class.java)
+                if(friendRequest!=null){
+                    //Updates request status to ACCEPTED
+                    friendRequestRef.document(requestId)
+                        .update("status", FriendRequestStatus.ACCEPTED.value)
+                        .addOnSuccessListener {
+                            //Creates a new Friendship document
+                            val newFriendship = Friendship(
+                                userUsername = friendRequest.sender,
+                                friendUsername = friendRequest.receiver
+                            )
+
+                            friendshipRef.add(newFriendship)
+                                .addOnSuccessListener {
+                                    onSuccess()
+                                }
+                                .addOnFailureListener { exception ->
+                                    onFailure(exception)
+                                }
+                        }
+                        .addOnFailureListener { exception ->
+                            onFailure(exception)
+                        }
+                }else{
+                    onFailure(Exception("Friend request not found"))
+                }
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
 
     //Rejects a friend request by updating its status to "rejected"
