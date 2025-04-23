@@ -14,6 +14,16 @@ class FriendsAdapter(private var friendsList : List<Friendship>,
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val view = layoutInflater.inflate(R.layout.friends_list_item, parent, false)
+
+        // Sets item width to 70% of screen when in landscape mode
+        val orientation = parent.context.resources.configuration.orientation
+        if(orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE){
+            val screenWidth = parent.context.resources.displayMetrics.widthPixels
+            view.layoutParams.width = (screenWidth * 0.7).toInt()
+        }else{
+            view.layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+        }
+
         return ViewHolder(view)
     }
 

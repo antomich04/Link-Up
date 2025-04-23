@@ -11,7 +11,6 @@ class Client{
     private val friendRequestRef = db.collection("FriendRequests")
     private val friendshipRef = db.collection("Friendships")
 
-
     fun insertUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
         val docRef = userRef.document(user.username)
 
@@ -113,7 +112,7 @@ class Client{
             if(senderSnapshot.isEmpty){
                 checkReceiverQuery.get().addOnSuccessListener { receiverSnapshot ->
                     if(receiverSnapshot.isEmpty){
-                        // No request exists — creates a new one
+                        //No request exists — creates a new one
                         val requestDoc = friendRequestRef.document()
                         val friendRequest = FriendRequest(
                             sender = senderRef,
@@ -159,7 +158,7 @@ class Client{
                 if(snapshot!=null && !snapshot.isEmpty){
                     val requests = snapshot.documents.mapNotNull { doc ->
                         doc.toObject(FriendRequest::class.java)?.apply {
-                            id = doc.id //Sets the document ID as the previously generated ID
+                            id = doc.id
                         }
                     }
                     liveData.postValue(requests)

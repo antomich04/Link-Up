@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -21,23 +19,25 @@ import com.example.linkup.activities.roomDB.UserViewModel
 import com.example.linkup.activities.roomDB.UserViewModelFactory
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class SignUpActivity : AppCompatActivity() {
-    private lateinit var nameInput : EditText
-    private lateinit var emailInput : EditText
-    private lateinit var usernameInput : EditText
-    private lateinit var passwordInput : EditText
+    private lateinit var nameInput : TextInputEditText
+    private lateinit var emailInput : TextInputEditText
+    private lateinit var usernameInput : TextInputEditText
+    private lateinit var passwordInput : TextInputEditText
+    private lateinit var nameInputContainer : TextInputLayout
+    private lateinit var emailInputContainer : TextInputLayout
+    private lateinit var usernameInputContainer : TextInputLayout
+    private lateinit var passwordInputContainer : TextInputLayout
     private lateinit var signupButton : Button
     private lateinit var backButton : FloatingActionButton
     private lateinit var rootLayout : ConstraintLayout
-    private lateinit var nameError : TextView
-    private lateinit var emailError : TextView
-    private lateinit var usernameError : TextView
-    private lateinit var passwordError : TextView
     private val client = Client()
     private lateinit var userViewModel: UserViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         DynamicColors.applyToActivityIfAvailable(this)
@@ -49,16 +49,16 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         nameInput = findViewById(R.id.nameInput)
-        emailInput = findViewById(R.id.email)
+        emailInput = findViewById(R.id.emailInput)
         usernameInput = findViewById(R.id.usernameInput)
         passwordInput = findViewById(R.id.passwordInput)
-        signupButton = findViewById(R.id.submitSignupBtn)
+        nameInputContainer = findViewById(R.id.nameInputContainer)
+        emailInputContainer = findViewById(R.id.emailInputContainer)
+        usernameInputContainer = findViewById(R.id.usernameInputContainer)
+        passwordInputContainer = findViewById(R.id.passwordInputContainer)
+        signupButton = findViewById(R.id.submitLoginBtn)
         backButton = findViewById(R.id.backBtn)
         rootLayout = findViewById(R.id.main)
-        nameError = findViewById(R.id.nameError)
-        emailError = findViewById(R.id.emailError)
-        usernameError = findViewById(R.id.usernameError2)
-        passwordError = findViewById(R.id.passwordError2)
 
         //Initializes Room Database + ViewModel
         val database = LocalDatabase.getDB(applicationContext)
@@ -79,7 +79,7 @@ class SignUpActivity : AppCompatActivity() {
                 //Checks if the username already exists
                 client.checkIfUsernameExists(username, onSuccess = { exists ->
                     if(exists){
-                        usernameError.text = resources.getString(R.string.username_taken)
+                        usernameInputContainer.error = resources.getString(R.string.username_taken)
                     }else{
                         //Creates a new user
                         val newUser = User(
@@ -134,33 +134,34 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun validateSignup() : Boolean{
-        if(nameInput.text.isEmpty()){
-            nameError.text = getString(R.string.name_error)
+        if(nameInput.text!!.isEmpty()){
+            nameInputContainer.error = getString(R.string.name_error)
         }else{
-            nameError.text = ""
+            nameInputContainer.error = null
         }
 
-        if(emailInput.text.isEmpty()){
-            emailError.text = getString(R.string.email_error)
+        if(emailInput.text!!.isEmpty()){
+            emailInputContainer.error = getString(R.string.email_error)
         }else{
-            emailError.text = ""
+            emailInputContainer.error= null
         }
 
-        if(usernameInput.text.isEmpty()){
-            usernameError.text = getString(R.string.username_error)
+        if(usernameInput.text!!.isEmpty()){
+            usernameInputContainer.error = getString(R.string.username_error)
         }else{
-            usernameError.text = ""
+            usernameInputContainer.error = null
         }
 
-        if(passwordInput.text.isEmpty()){
-            passwordError.text = getString(R.string.password_error)
-        }else if(passwordInput.text.length < 6){
-            passwordError.text = getString(R.string.small_password_error)
+        if(passwordInput.text!!.isEmpty()){
+            passwordInputContainer.error = getString(R.string.password_error)
+        }else if(passwordInput.text!!.length < 6){
+            passwordInputContainer.error = getString(R.string.small_password_error)
         }else{
-            passwordError.text = ""
+            passwordInputContainer.error = null
         }
 
-        val returnValue = nameError.text.isEmpty() && emailError.text.isEmpty() && usernameError.text.isEmpty() && passwordError.text.isEmpty()
+        val returnValue = nameInputContainer.error.isNullOrEmpty() && emailInputContainer.error.isNullOrEmpty() &&
+                          usernameInputContainer.error.isNullOrEmpty() && passwordInputContainer.error.isNullOrEmpty()
         return returnValue
     }
 }

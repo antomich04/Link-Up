@@ -10,38 +10,39 @@
     android:background="?colorSurface"
     tools:context=".activities.HomePageActivity">
 
-    <!-- Main Content Layout -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
-        <!-- Toolbar (should not be overlapped by status bar) -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?colorSurfaceContainerHigh"
-            app:title="CHATS"/>
+            android:background="?colorSurface"
+            android:elevation="4dp"
+            android:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+            app:title="CHATS" />
 
-        <!-- Fragment Container -->
         <FrameLayout
             android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="?attr/actionBarSize"
-            android:background="?colorSurface"/>
-        <!-- Main Screen Content -->
+            android:background="?colorSurface" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
         android:layout_width="wrap_content"
+        android:background="?colorSurface"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:fitsSystemWindows="true"
         app:menu="@menu/main_menu"
         app:headerLayout="@layout/home_page_drawer"
-        android:fitsSystemWindows="true"/>
+        app:itemTextAppearance="@style/TextAppearance.Material3.BodyLarge"
+        app:itemIconTint="?attr/colorOnSurface" >
+    </com.google.android.material.navigation.NavigationView>
 </androidx.drawerlayout.widget.DrawerLayout>

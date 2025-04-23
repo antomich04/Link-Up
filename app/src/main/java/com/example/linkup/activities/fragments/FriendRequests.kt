@@ -31,7 +31,7 @@ class FriendRequests : Fragment() {
         val view = inflater.inflate(R.layout.friend_requests, container, false)
 
         val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
-        toolbar?.setTitle("INCOMING FRIEND REQUESTS")
+        toolbar?.setTitle("FRIEND REQUESTS")
 
         client = Client()
 

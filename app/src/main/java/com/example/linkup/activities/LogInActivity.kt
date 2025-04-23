@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -22,17 +21,19 @@ import com.example.linkup.activities.roomDB.UserViewModel
 import com.example.linkup.activities.roomDB.UserViewModelFactory
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 
 class LogInActivity : AppCompatActivity() {
-    private lateinit var usernameInput : EditText
-    private lateinit var passwordInput : EditText
+    private lateinit var usernameInput : TextInputEditText
+    private lateinit var passwordInput : TextInputEditText
+    private lateinit var usernameInputContainer : TextInputLayout
+    private lateinit var passwordInputContainer : TextInputLayout
+    private lateinit var userNotFound : TextView
     private lateinit var loginButton : Button
     private lateinit var backButton : FloatingActionButton
     private lateinit var rootLayout : ConstraintLayout
-    private lateinit var usernameError : TextView
-    private lateinit var passwordError : TextView
-    private lateinit var userNotFoundError : TextView
     private val client = Client()
     private lateinit var userViewModel: UserViewModel
 
@@ -55,11 +56,11 @@ class LogInActivity : AppCompatActivity() {
 
         usernameInput = findViewById(R.id.usernameInput)
         passwordInput = findViewById(R.id.passwordInput)
-        loginButton = findViewById(R.id.submitSignupBtn)
+        usernameInputContainer = findViewById(R.id.usernameInputContainer)
+        passwordInputContainer = findViewById(R.id.passwordInputContainer)
+        userNotFound = findViewById(R.id.userNotFound)
+        loginButton = findViewById(R.id.submitLoginBtn)
         backButton = findViewById(R.id.backBtn)
-        usernameError = findViewById(R.id.usernameError1)
-        passwordError = findViewById(R.id.passwordError1)
-        userNotFoundError = findViewById(R.id.userNotFoundError)
         rootLayout = findViewById(R.id.main) //Root view
 
         backButton.setOnClickListener{
@@ -104,8 +105,8 @@ class LogInActivity : AppCompatActivity() {
                 }, onFailure = { exception ->
                     if(exception is LoginException){
                         when(exception.message){
-                            "Incorrect password!" -> passwordError.text = getString(R.string.wrong_password)
-                            "User does not exist!" -> userNotFoundError.text = getString(R.string.user_not_found)
+                            "Incorrect password!" -> passwordInputContainer.error = getString(R.string.wrong_password)
+                            "User does not exist!" -> userNotFound.text = getString(R.string.user_not_found)
                         }
                     }
                 })
@@ -130,20 +131,20 @@ class LogInActivity : AppCompatActivity() {
     }
 
     private fun validateLogin() : Boolean{
-        if(usernameInput.text.isEmpty()){
-            usernameError.text = getString(R.string.username_error)
+        if(usernameInput.text!!.isEmpty()){
+            usernameInputContainer.error = getString(R.string.username_error)
         }else{
-            usernameError.text = ""
+            usernameInputContainer.error = null
         }
 
-        if(passwordInput.text.isEmpty()){
-            passwordError.text = getString(R.string.password_error)
+        if(passwordInput.text!!.isEmpty()){
+            passwordInputContainer.error = getString(R.string.password_error)
         }else{
-            passwordError.text = ""
+            passwordInputContainer.error = null
         }
 
-        userNotFoundError.text = ""
-        val returnValue = usernameError.text.isEmpty() && passwordError.text.isEmpty()
+        userNotFound.text = ""
+        val returnValue = usernameInputContainer.error.isNullOrEmpty() && passwordInputContainer.error.isNullOrEmpty()
         return returnValue
     }
 }

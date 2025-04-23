@@ -15,6 +15,7 @@
         android:fontFamily="@font/noto_sans_bold"
         android:text="@string/welcome_text"
         android:textSize="48sp"
+        android:textColor="?colorOnSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -22,13 +23,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.245" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/loginButton"
+        style="@style/Widget.Material3.Button"
         android:layout_width="188dp"
         android:layout_height="wrap_content"
         android:text="@string/login"
         android:textSize="30sp"
         android:fontFamily="@font/noto_sans_bold"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/signupButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.515"
@@ -36,13 +40,16 @@
         app:layout_constraintTop_toBottomOf="@+id/welcomeText"
         app:layout_constraintVertical_bias="0.508" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/signupButton"
+        style="@style/Widget.Material3.Button"
         android:layout_width="188dp"
         android:layout_height="wrap_content"
         android:text="@string/signup"
         android:textSize="30sp"
         android:fontFamily="@font/noto_sans_bold"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.515"

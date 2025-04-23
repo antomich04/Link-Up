@@ -21,13 +21,11 @@
     <string name="home_page">HOME</string>
     <string name="friends_page">FRIENDS</string>
     <string name="requests_page">FRIEND REQUESTS</string>
-    <string name="friend_requests_label">Incoming Friend Requests</string>
     <string name="options_page">OPTIONS</string>
     <string name="logout">LOGOUT</string>
-    <string name="change_picture">CHANGE PICTURE</string>
     <string name="openDrawer">open</string>
     <string name="closeDrawer">close</string>
     <string name="send_request_button">SEND REQUEST</string>
-    <string name="request_already_sent">Friend request already sent!</string>
+    <string name="request_already_sent">Friend request already sent or received!</string>
     <string name="request_failed">Failed to send friend request. Please try again.</string>
 </resources>
