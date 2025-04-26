@@ -28,4 +28,14 @@
     <string name="send_request_button">SEND REQUEST</string>
     <string name="request_already_sent">Friend request already sent or received!</string>
     <string name="request_failed">Failed to send friend request. Please try again.</string>
+    <string name="requests_channel">Requests</string>
+    <string name="change_username">CHANGE USERNAME</string>
+    <string name="change_password">CHANGE PASSWORD</string>
+    <string name="pref_language">Preferred Language:</string>
+    <string name="delete_user">DELETE ACCOUNT</string>
+    <string name="delete_account_prompt">Are you sure you want to delete your account?</string>
+    <string name="apply_changes">APPLY</string>
+    <string name="new_username_hint">New Username</string>
+    <string name="new_password_hint">New Password</string>
+    <string name="invalid_password">Same password as the old one!</string>
 </resources>

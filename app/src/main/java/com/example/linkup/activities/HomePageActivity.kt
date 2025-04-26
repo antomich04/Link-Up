@@ -23,6 +23,9 @@ import com.example.linkup.activities.roomDB.UserViewModelFactory
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
+import androidx.core.content.edit
+import com.example.linkup.activities.firestoreDB.Client
+import com.google.firebase.messaging.FirebaseMessaging
 
 class HomePageActivity : AppCompatActivity() {
     lateinit var toolbar: Toolbar
@@ -31,6 +34,7 @@ class HomePageActivity : AppCompatActivity() {
     private lateinit var toggle: ActionBarDrawerToggle
     private lateinit var userViewModel: UserViewModel
     private lateinit var loggedinUsername : TextView
+    private lateinit var client : Client
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +53,7 @@ class HomePageActivity : AppCompatActivity() {
         val userDao = database.userDao()
         val factory = UserViewModelFactory(userDao)
         userViewModel = factory.create(UserViewModel::class.java)
+        client = Client()
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -61,17 +66,24 @@ class HomePageActivity : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // Displays the current logged in username in the navigation drawer header
-        lifecycleScope.launch {
-            val loggedInUser = userViewModel.getLoggedInUser()
-            if (loggedInUser != null) {
+        //Displays the current logged in username in the navigation drawer header
+        userViewModel.observeLoggedInUser().observe(this) { user ->
+            if(user != null){
+                //Gets the push notifications token after successful signup
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if(task.isSuccessful){
+                        val token = task.result
+                        client.saveToken(user.username, token)
+                    }
+                }
+
                 val headerView = navView.getHeaderView(0)
                 loggedinUsername = headerView.findViewById(R.id.loggedinUsername)
-                loggedinUsername.text = loggedInUser.username
+                loggedinUsername.text = user.username
             }
         }
 
-        if (savedInstanceState == null) {
+        if(savedInstanceState == null){
             supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, HomePage()).commit()
         }
 
@@ -98,6 +110,13 @@ class HomePageActivity : AppCompatActivity() {
                             userViewModel.logOutUser(loggedInUser.username)
                         }
                     }
+
+                    //Removes the username to avoid push notifications token conflict
+                    val sharedPref = getSharedPreferences("userPrefs", MODE_PRIVATE)
+                    sharedPref.edit{
+                        remove("loggedInUsername")
+                    }
+
                     val intent = Intent(this, StartingActivity::class.java)
                     startActivity(intent)
                     finish()

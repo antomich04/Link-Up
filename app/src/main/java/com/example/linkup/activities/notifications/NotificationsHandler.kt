@@ -18,6 +18,24 @@ class NotificationsHandler(private val context : Context) {
         notificationManager.notify(1, notification)
     }
 
+    fun showChangedUsernameNotification(){
+        val notification = NotificationCompat.Builder(context, SETTINGS_CHANNEL_ID)
+            .setSmallIcon(R.drawable.settings)
+            .setContentTitle("Successfull change")
+            .setContentText("Your username has been changed!")
+            .build()
+        notificationManager.notify(2, notification)
+    }
+
+    fun showChangedPasswordNotification(){
+        val notification = NotificationCompat.Builder(context, SETTINGS_CHANNEL_ID)
+            .setSmallIcon(R.drawable.settings)
+            .setContentTitle("Successfull change")
+            .setContentText("Your password has been changed!")
+            .build()
+        notificationManager.notify(3, notification)
+    }
+
     fun createNotificationChannel(id: String, name: String, desc: String) {
         val channel = NotificationChannel(id, name, NotificationManager.IMPORTANCE_HIGH).apply{
             this.description = desc
@@ -28,5 +46,6 @@ class NotificationsHandler(private val context : Context) {
 
     companion object{
         const val REQUESTS_CHANNEL_ID = "Requests"
+        const val SETTINGS_CHANNEL_ID = "Settings"
     }
 }

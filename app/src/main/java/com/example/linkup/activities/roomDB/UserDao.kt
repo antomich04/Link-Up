@@ -1,5 +1,6 @@
 package com.example.linkup.activities.roomDB
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -29,5 +30,15 @@ interface UserDao {
 
     @Query("SELECT * FROM Users WHERE username IN (SELECT username FROM User_Preferences WHERE isLoggedIn = 1) LIMIT 1")
     suspend fun getLoggedInUser(): LocalUser?
+
+    //Used to dynamically change the username in the home page drawer if it changes
+    @Query("SELECT * FROM Users WHERE username IN (SELECT username FROM User_Preferences WHERE isLoggedIn = 1) LIMIT 1")
+    fun observeLoggedInUser(): LiveData<LocalUser?>
+
+    @Query("UPDATE Users SET username = :newUsername WHERE username = :oldUsername")
+    suspend fun changeUsername(newUsername: String, oldUsername: String)
+
+    @Query("UPDATE Users SET password = :newPassword WHERE username = :username")
+    suspend fun changePassword(username: String, newPassword: String)
 
 }

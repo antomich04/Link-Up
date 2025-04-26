@@ -1,0 +1,111 @@
+package com.example.linkup.activities.fragments
+
+import android.app.NotificationManager
+import android.content.Context.INPUT_METHOD_SERVICE
+import android.content.Context.NOTIFICATION_SERVICE
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.example.linkup.R
+import com.example.linkup.activities.firestoreDB.Client
+import com.example.linkup.activities.notifications.NotificationsHandler
+import com.example.linkup.activities.notifications.NotificationsHandler.Companion.SETTINGS_CHANNEL_ID
+import com.example.linkup.activities.roomDB.LocalDatabase
+import com.example.linkup.activities.roomDB.UserViewModel
+import com.example.linkup.activities.roomDB.UserViewModelFactory
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.launch
+
+class ChangeUsername : Fragment() {
+    private lateinit var backToOptionsBtn: FloatingActionButton
+    private lateinit var changeUsernameBtn: Button
+    private lateinit var newUsernameTxt: TextInputEditText
+    private lateinit var newUsernameInputContainer: TextInputLayout
+    private lateinit var client : Client
+    private lateinit var userViewModel: UserViewModel
+    private var notificationsManager: NotificationManager? = null
+    private lateinit var notificationsHandler: NotificationsHandler
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.change_username, container, false)
+
+        backToOptionsBtn = view.findViewById(R.id.backToOptionsBtn)
+        changeUsernameBtn = view.findViewById(R.id.changeUsernameBtn)
+        newUsernameTxt = view.findViewById(R.id.newUsernameInput)
+        newUsernameInputContainer = view.findViewById(R.id.newUsernameInputContainer)
+        client = Client()
+
+        //Initializes Room Database + ViewModel
+        val database = LocalDatabase.getDB(requireContext())
+        val userDao = database.userDao()
+        val factory = UserViewModelFactory(userDao)
+        userViewModel = factory.create(UserViewModel::class.java)
+
+        notificationsManager = requireContext().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationsHandler = NotificationsHandler(requireContext())
+        notificationsHandler.createNotificationChannel(SETTINGS_CHANNEL_ID, "Settings", "This channel provides information about the user's account related actions")
+
+        backToOptionsBtn.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
+        lifecycleScope.launch {
+            val loggedinUser = userViewModel.getLoggedInUser()
+
+            changeUsernameBtn.setOnClickListener {
+                val newUsername = newUsernameTxt.text.toString()
+                if(newUsername.isEmpty()){
+                    newUsernameInputContainer.error = getString(R.string.username_error)
+                    return@setOnClickListener
+                }else if(loggedinUser!!.username==newUsername){
+                    newUsernameInputContainer.error = getString(R.string.invalid_username)
+                    return@setOnClickListener
+                }else{
+                    newUsernameInputContainer.error = null
+                }
+
+                client.checkIfUsernameExists(newUsername, onSuccess = { exists ->
+                    if(exists){
+                        newUsernameInputContainer.error = getString(R.string.username_taken)
+                        return@checkIfUsernameExists
+                    }else{
+                        userViewModel.changeUsername(newUsername, loggedinUser.username)
+                        client.changeUsername(newUsername, loggedinUser.username, onSuccess = {
+                            client.updateFriendReferences(loggedinUser.username, newUsername, onComplete = {
+                                requireActivity().runOnUiThread {
+                                    notificationsHandler.showChangedUsernameNotification()
+                                    parentFragmentManager.popBackStack()
+                                }
+
+                            })
+                        }, onFailure = {})
+                    }
+                }, onFailure = {})
+            }
+        }
+
+        view.setOnTouchListener { _, _ ->
+            hideKeyboard(view)
+            newUsernameTxt.clearFocus()
+            false
+        }
+
+        return view
+    }
+
+    private fun hideKeyboard(view : View){
+        val imm = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+}

@@ -11,7 +11,5 @@ data class UserPreferences(
     @PrimaryKey
     var username: String,
     @ColumnInfo
-    var isLoggedIn : Boolean,
-    @ColumnInfo
-    var appLanguage : String = "en"
+    var isLoggedIn : Boolean
 )

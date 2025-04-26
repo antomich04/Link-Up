@@ -21,6 +21,7 @@ import com.google.android.material.color.DynamicColors
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.messaging.FirebaseMessaging
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var nameInput : TextInputEditText
@@ -99,8 +100,7 @@ class SignUpActivity : AppCompatActivity() {
 
                         val preferences = UserPreferences(
                             username = username,
-                            isLoggedIn = true,
-                            appLanguage = "en"
+                            isLoggedIn = true
                         )
 
                         //Registers the user locally
@@ -108,6 +108,15 @@ class SignUpActivity : AppCompatActivity() {
 
                         //Inserts user into Firestore
                         client.insertUser(newUser, onSuccess = {
+
+                            //Gets the push notifications token after successful signup
+                            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val token = task.result
+                                    client.saveToken(username, token)
+                                }
+                            }
+
                             val intent = Intent(this, HomePageActivity::class.java)
                             startActivity(intent)
                         }, onFailure = {})

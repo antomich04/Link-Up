@@ -270,4 +270,80 @@ class Client{
             .addOnFailureListener { exception -> onFailure(exception) }
     }
 
+    fun changeUsername(newUsername: String, oldUsername: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val oldDocRef = userRef.document(oldUsername)
+        val newDocRef = userRef.document(newUsername)
+
+        oldDocRef.get().addOnSuccessListener { documentSnapshot ->
+            if(documentSnapshot.exists()){
+                val data = documentSnapshot.data
+                if(data != null){
+                    newDocRef.set(data)
+                        .addOnSuccessListener {
+                            userRef.document(newUsername).update("username", newUsername)
+                                .addOnSuccessListener {
+                                    oldDocRef.delete()
+                                        .addOnSuccessListener {
+                                            onSuccess()
+                                        }
+                                        .addOnFailureListener { exception -> onFailure(exception) }
+                                }
+                                .addOnFailureListener { exception -> onFailure(exception) }
+                        }
+                        .addOnFailureListener { exception -> onFailure(exception) }
+                }else{
+                    onFailure(Exception("No data found in old document"))
+                }
+            }else{
+                onFailure(Exception("Old document does not exist"))
+            }
+        }.addOnFailureListener { exception -> onFailure(exception) }
+    }
+
+    fun updateFriendReferences(oldUsername: String, newUsername: String, onComplete: () -> Unit) {
+        val oldUserRef = userRef.document(oldUsername)
+        val newUserRef = userRef.document(newUsername)
+
+        //Updates Friend Requests
+        friendRequestRef.whereEqualTo("sender", oldUserRef).get().addOnSuccessListener { sentRequests ->
+            for(doc in sentRequests.documents){
+                doc.reference.update("sender", newUserRef)
+            }
+        }
+        friendRequestRef.whereEqualTo("receiver", oldUserRef).get().addOnSuccessListener { receivedRequests ->
+            for(doc in receivedRequests.documents){
+                doc.reference.update("receiver", newUserRef)
+            }
+        }
+
+        //Updates Friendships
+        friendshipRef.whereEqualTo("userUsername", oldUserRef).get().addOnSuccessListener { sentFriends ->
+            for(doc in sentFriends.documents){
+                doc.reference.update("userUsername", newUserRef)
+            }
+        }
+        friendshipRef.whereEqualTo("friendUsername", oldUserRef).get().addOnSuccessListener { receivedFriends ->
+            for(doc in receivedFriends.documents){
+                doc.reference.update("friendUsername", newUserRef)
+            }
+        }.addOnCompleteListener {
+            onComplete()
+        }
+    }
+
+    fun changePassword(username: String, newPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        userRef.document(username).update("password", newPassword)
+            .addOnSuccessListener{
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+
+    //Used to save the token for the FCM push notifications
+    fun saveToken(username: String, token: String){
+        userRef.document(username).update("token", token)
+    }
 }

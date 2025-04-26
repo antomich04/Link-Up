@@ -1,56 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/OptionsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="32dp"
-    android:background="?colorSurface">
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/changeUsernameBTn"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="500dp"
-        android:fontFamily="@font/noto_sans_bold"
-        android:text="@string/change_username"
-        android:textSize="24sp"
-        app:backgroundTint="?colorPrimary"
-        app:cornerRadius="16dp"
-        app:iconGravity="textStart"
-        app:iconPadding="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.489"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/changePasswordBtn"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:fontFamily="@font/noto_sans_bold"
-        android:text="@string/change_password"
-        android:textSize="24sp"
-        app:backgroundTint="?colorPrimary"
-        app:cornerRadius="16dp"
-        app:iconGravity="textStart"
-        app:iconPadding="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.489"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/changeUsernameBTn" />
+    android:background="?colorSurface"
+    android:padding="32dp">
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/deleteAccountBtn"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="@string/delete_user"
-        android:textSize="24sp"
-        android:textColor="?colorOnError"
+        android:layout_marginBottom="5dp"
         android:fontFamily="@font/noto_sans_bold"
+        android:text="@string/delete_user"
+        android:textColor="?colorOnError"
+        android:textSize="18sp"
         app:backgroundTint="?colorError"
         app:cornerRadius="16dp"
         app:iconGravity="textStart"
@@ -58,8 +24,41 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/changeUsernameBTn"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:fontFamily="@font/noto_sans_bold"
+        android:text="@string/change_username"
+        android:textSize="18sp"
+        app:backgroundTint="?colorPrimary"
+        app:cornerRadius="16dp"
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:layout_constraintBottom_toTopOf="@+id/changePasswordBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/changePasswordBtn"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/changePasswordBtn"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:fontFamily="@font/noto_sans_bold"
+        android:text="@string/change_password"
+        android:textSize="18sp"
+        app:backgroundTint="?colorPrimary"
+        app:cornerRadius="16dp"
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:layout_constraintBottom_toTopOf="@+id/deleteAccountBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

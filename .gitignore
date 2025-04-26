@@ -9,3 +9,6 @@
 .captures/
 /app/google-services.json
 /app/build/
+/.firebaserc
+/firebase-debug.log
+/node_modules/

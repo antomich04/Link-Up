@@ -24,6 +24,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
+import androidx.core.content.edit
+import com.google.firebase.messaging.FirebaseMessaging
 
 class LogInActivity : AppCompatActivity() {
     private lateinit var usernameInput : TextInputEditText
@@ -73,6 +75,13 @@ class LogInActivity : AppCompatActivity() {
             if(validateLogin()){
                 val username = usernameInput.text.toString()
                 val password = passwordInput.text.toString()
+
+                //Used to later get the username for the push notifications token
+                val sharedPref = getSharedPreferences("userPrefs", MODE_PRIVATE)
+                sharedPref.edit{
+                    putString("loggedInUsername", username)
+                }
+
                 client.loginUser(username, password, onSuccess ={
                     //Gets user name and email from Firestore
                     client.getUserCredentials(username, onSuccess = { name, email ->
@@ -88,13 +97,20 @@ class LogInActivity : AppCompatActivity() {
                                 )
                                 val preferences = UserPreferences(
                                     username = username,
-                                    isLoggedIn = true,
-                                    appLanguage = "en"
+                                    isLoggedIn = true
                                 )
                                 userViewModel.registerUser(newUser, preferences)
                             }else{
                                 //Marks as logged in
                                 userViewModel.logInUser(username)
+                            }
+
+                            //Gets the push notifications token
+                            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                if(task.isSuccessful){
+                                    val token = task.result
+                                    client.saveToken(username, token)
+                                }
                             }
 
                             //Redirects to home page
