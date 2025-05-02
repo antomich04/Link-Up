@@ -3,6 +3,7 @@ package com.example.linkup.activities.firestoreDB
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 
 class Client{
@@ -10,6 +11,7 @@ class Client{
     private val userRef = db.collection("Users")
     private val friendRequestRef = db.collection("FriendRequests")
     private val friendshipRef = db.collection("Friendships")
+    private val blocksRef = db.collection("Blocks")
 
     fun insertUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
         val docRef = userRef.document(user.username)
@@ -72,14 +74,14 @@ class Client{
             }
     }
 
-    fun getUserCredentials(username: String, onSuccess: (String, String) -> Unit, onFailure: (Exception) -> Unit) {
+    fun getUserCredentials(username: String, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
         val docRef = userRef.document(username)
         docRef.get()
             .addOnSuccessListener { document ->
                 if(document.exists()){
                     val user = document.toObject(User::class.java)
                     if(user!=null){
-                        onSuccess(user.name, user.email)
+                        onSuccess(user.name)
                     }else{
                         onFailure(Exception("Failed to parse user data"))
                     }
@@ -96,50 +98,72 @@ class Client{
         val senderRef = userRef.document(sender)
         val receiverRef = userRef.document(receiver)
 
-        //Checks if there is a pending or accepted request
-        val checkSenderQuery = friendRequestRef
-            .whereEqualTo("sender", senderRef)
-            .whereEqualTo("receiver", receiverRef)
-            .whereIn("status", listOf(FriendRequestStatus.PENDING.value, FriendRequestStatus.ACCEPTED.value))
-
-        val checkReceiverQuery = friendRequestRef
-            .whereEqualTo("sender", receiverRef)
-            .whereEqualTo("receiver", senderRef)
-            .whereIn("status", listOf(FriendRequestStatus.PENDING.value, FriendRequestStatus.ACCEPTED.value))
-
-        //Checks both directions (sender and receiver)
-        checkSenderQuery.get().addOnSuccessListener { senderSnapshot ->
-            if(senderSnapshot.isEmpty){
-                checkReceiverQuery.get().addOnSuccessListener { receiverSnapshot ->
-                    if(receiverSnapshot.isEmpty){
-                        //No request exists — creates a new one
-                        val requestDoc = friendRequestRef.document()
-                        val friendRequest = FriendRequest(
-                            sender = senderRef,
-                            receiver = receiverRef,
-                            status = FriendRequestStatus.PENDING.value
-                        )
-
-                        requestDoc.set(friendRequest)
-                            .addOnSuccessListener {
-                                onSuccess(requestDoc.id)
-                            }
-                            .addOnFailureListener { exception ->
-                                onFailure(exception)
-                            }
-                    }else{
-                        //A request or friendship already exists from the receiver
-                        onFailure(Exception("Friend request already sent or already friends"))
-                    }
+        //Checks if receiver has blocked the sender
+        blocksRef.whereEqualTo("userUsername", receiver)
+            .whereEqualTo("blockedUsername", sender)
+            .get()
+            .addOnSuccessListener { receiverBlockSnapshot ->
+                if(!receiverBlockSnapshot.isEmpty){
+                    onFailure(Exception("User not found"))
+                    return@addOnSuccessListener
                 }
-            }else{
-                //A request or friendship already exists from the sender
-                onFailure(Exception("Friend request already sent or already friends"))
+
+                //Checks if sender has blocked the receiver
+                blocksRef.whereEqualTo("userUsername", sender)
+                    .whereEqualTo("blockedUsername", receiver)
+                    .get()
+                    .addOnSuccessListener { senderBlockSnapshot ->
+                        if(!senderBlockSnapshot.isEmpty){
+                            onFailure(Exception("User is blocked"))
+                            return@addOnSuccessListener
+                        }
+
+                        //Checks if a request already exists
+                        val checkSenderQuery = friendRequestRef.whereEqualTo("sender", senderRef)
+                            .whereEqualTo("receiver", receiverRef)
+                            .whereIn("status", listOf(FriendRequestStatus.PENDING.value, FriendRequestStatus.ACCEPTED.value))
+
+                        val checkReceiverQuery = friendRequestRef.whereEqualTo("sender", receiverRef)
+                            .whereEqualTo("receiver", senderRef)
+                            .whereIn("status", listOf(FriendRequestStatus.PENDING.value, FriendRequestStatus.ACCEPTED.value))
+
+                        checkSenderQuery.get().addOnSuccessListener { senderSnapshot ->
+                            if(senderSnapshot.isEmpty){
+                                checkReceiverQuery.get().addOnSuccessListener { receiverSnapshot ->
+                                    if(receiverSnapshot.isEmpty){
+                                        val requestDoc = friendRequestRef.document()
+                                        val friendRequest = FriendRequest(
+                                            sender = senderRef,
+                                            receiver = receiverRef,
+                                            status = FriendRequestStatus.PENDING.value
+                                        )
+
+                                        requestDoc.set(friendRequest)
+                                            .addOnSuccessListener {
+                                                onSuccess(requestDoc.id)
+                                            }
+                                            .addOnFailureListener { exception ->
+                                                onFailure(exception)
+                                            }
+                                    }else{
+                                        onFailure(Exception("Friend request already sent or already friends"))
+                                    }
+                                }
+                            }else{
+                                onFailure(Exception("Friend request already sent or already friends"))
+                            }
+                        }.addOnFailureListener { exception ->
+                            onFailure(exception)
+                        }
+                    }.addOnFailureListener { exception ->
+                        onFailure(exception)
+                    }
+
+            }.addOnFailureListener { exception ->
+                onFailure(exception)
             }
-        }.addOnFailureListener { exception ->
-            onFailure(exception)
-        }
     }
+
 
     //Gets the list of incoming friend requests of logged in user
     fun getIncomingFriendRequests(username: String): LiveData<List<FriendRequest>> {
@@ -342,8 +366,140 @@ class Client{
     }
 
 
-    //Used to save the token for the FCM push notifications
-    fun saveToken(username: String, token: String){
-        userRef.document(username).update("token", token)
+    //Used to save the token in an array for the FCM push notifications
+    fun saveToken(username: String, token: String) {
+        userRef.document(username).update("tokens", FieldValue.arrayUnion(token))
     }
+
+    //Used to remove the token from the array when user logs out
+    fun removeToken(username: String, token: String) {
+        userRef.document(username).update("tokens", FieldValue.arrayRemove(token))
+    }
+
+    fun removeFriend(userUsername: String, friendUsername: String, onComplete: () -> Unit) {
+        val userRef = db.document("Users/$userUsername")
+        val friendRef = db.document("Users/$friendUsername")
+        val batch = db.batch()
+
+        //Deletes friendship document
+        friendshipRef.whereEqualTo("userUsername", userRef)
+            .whereEqualTo("friendUsername", friendRef)
+            .get()
+            .addOnSuccessListener { userFriendResult ->
+                userFriendResult.documents.forEach { doc ->
+                    batch.delete(doc.reference)
+                }
+
+                friendshipRef.whereEqualTo("userUsername", friendRef)
+                    .whereEqualTo("friendUsername", userRef)
+                    .get()
+                    .addOnSuccessListener { friendUserResult ->
+                        friendUserResult.documents.forEach { doc ->
+                            batch.delete(doc.reference)
+                        }
+
+                        //Deletes accepted friend requests in both directions, sent first
+                        friendRequestRef.whereEqualTo("sender", userRef)
+                            .whereEqualTo("receiver", friendRef)
+                            .whereEqualTo("status", "accepted")
+                            .get()
+                            .addOnSuccessListener { sentRequests ->
+                                sentRequests.documents.forEach { doc ->
+                                    batch.delete(doc.reference)
+                                }
+
+                                //Received friend requests
+                                friendRequestRef.whereEqualTo("sender", friendRef)
+                                    .whereEqualTo("receiver", userRef)
+                                    .whereEqualTo("status", "accepted")
+                                    .get()
+                                    .addOnSuccessListener { receivedRequests ->
+                                        receivedRequests.documents.forEach { doc ->
+                                            batch.delete(doc.reference)
+                                        }
+
+                                        //Commits all deletions in a single batch
+                                        batch.commit().addOnCompleteListener {
+                                            onComplete()
+                                        }
+                                    }
+                            }
+                    }
+            }
+    }
+
+    fun deleteUser(username: String, onSuccess: () -> Unit) {
+        val userRef = userRef.document(username)
+        val batch = db.batch()
+
+        //Deletes user document
+        batch.delete(userRef)
+
+        //Deletes all friend requests involving the user (both sent and received)
+        friendRequestRef.whereEqualTo("sender", userRef).get()
+            .addOnSuccessListener { sentRequests ->
+                sentRequests.documents.forEach { doc ->
+                    batch.delete(doc.reference)
+                }
+
+                //Received friend requests
+                friendRequestRef.whereEqualTo("receiver", userRef).get()
+                    .addOnSuccessListener { receivedRequests ->
+                        receivedRequests.documents.forEach { doc ->
+                            batch.delete(doc.reference)
+                        }
+
+                        //Deletes all friendships involving the user
+                        friendshipRef.whereEqualTo("userUsername", userRef).get()
+                            .addOnSuccessListener { userFriendships ->
+                                userFriendships.documents.forEach { doc ->
+                                    batch.delete(doc.reference)
+                                }
+
+                                friendshipRef.whereEqualTo("friendUsername", userRef).get()
+                                    .addOnSuccessListener { friendFriendships ->
+                                        friendFriendships.documents.forEach { doc ->
+                                            batch.delete(doc.reference)
+                                        }
+
+                                        //Commits all operations
+                                        batch.commit()
+                                            .addOnSuccessListener{
+                                                onSuccess()
+                                            }
+                                    }
+                            }
+                    }
+            }
+    }
+
+    fun blockUser(userUsername: String, blockedUsername: String, onSuccess: () -> Unit){
+        removeFriend(userUsername, blockedUsername){
+            blocksRef.document().set(RemoteBlocks(userUsername, blockedUsername))
+                .addOnSuccessListener{
+                    onSuccess()
+                }
+        }
+    }
+
+    fun unblockUser(userUsername: String, blockedUsername: String, onSuccess: () -> Unit) {
+        blocksRef
+            .whereEqualTo("userUsername", userUsername)
+            .whereEqualTo("blockedUsername", blockedUsername)
+            .get()
+            .addOnSuccessListener { result ->
+                if(!result.isEmpty){
+                    val batch = db.batch()
+                    result.documents.forEach { doc ->
+                        batch.delete(doc.reference)
+                    }
+
+                    batch.commit()
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                }
+            }
+    }
+
 }

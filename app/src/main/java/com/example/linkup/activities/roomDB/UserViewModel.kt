@@ -53,4 +53,19 @@ class UserViewModel(private val userDao: UserDao) : ViewModel() {
     fun changePassword(username: String, newPassword: String) = viewModelScope.launch(Dispatchers.IO) {
         userDao.changePassword(username, newPassword)
     }
+
+    //Inserts a block
+    fun blockUser(block: Blocks) = viewModelScope.launch(Dispatchers.IO) {
+        userDao.blockUser(block)
+    }
+
+    //Unblocks a user
+    fun unblockUser(username: String, blockedUsername: String) = viewModelScope.launch(Dispatchers.IO) {
+        userDao.unblockUser(username, blockedUsername)
+    }
+
+    //Gets the list of blocked users
+    fun getBlockedUsersList(username: String): LiveData<List<Blocks>> {
+        return userDao.getBlockedUsersList(username)
+    }
 }

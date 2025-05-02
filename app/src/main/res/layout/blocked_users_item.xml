@@ -27,7 +27,7 @@
             android:background="?colorSurfaceContainerLow">
 
             <TextView
-                android:id="@+id/friendUsername"
+                android:id="@+id/blockedUserUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
@@ -41,23 +41,10 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/messageBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:backgroundTint="?colorTertiaryContainer"
-                android:clickable="true"
-                android:elevation="6dp"
-                app:fabCustomSize="32dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/removeFriendBtn"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.807"
-                app:srcCompat="@drawable/new_message" />
+
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/blockUserBtn"
+                android:id="@+id/unblockUserBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
@@ -69,22 +56,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.807"
-                app:srcCompat="@drawable/block_user" />
+                app:srcCompat="@drawable/remove_friend" />
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/removeFriendBtn"
+            <TextView
+                android:id="@+id/blockedAtTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:backgroundTint="?colorTertiaryContainer"
-                android:clickable="true"
-                android:elevation="6dp"
-                app:fabCustomSize="32dp"
+                android:layout_marginStart="16dp"
+                android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/blockUserBtn"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.807"
-                app:srcCompat="@drawable/remove_friend" />
+                app:layout_constraintVertical_bias="0.802" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

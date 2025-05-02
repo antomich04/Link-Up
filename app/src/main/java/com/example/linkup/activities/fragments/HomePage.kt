@@ -9,11 +9,7 @@ import androidx.fragment.app.Fragment
 import com.example.linkup.R
 
 class HomePage : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
         toolbar?.setTitle("CHATS")
         return inflater.inflate(R.layout.home_page, container, false)

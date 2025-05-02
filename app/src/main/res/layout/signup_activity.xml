@@ -12,11 +12,11 @@
         android:id="@+id/nameInputContainer"
         android:layout_width="305dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        app:boxStrokeColor="@color/edit_text_stroke_color"
+        android:layout_marginBottom="80dp"
         app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/edit_text_stroke_color"
         app:errorEnabled="true"
-        app:layout_constraintBottom_toTopOf="@+id/emailInputContainer"
+        app:layout_constraintBottom_toTopOf="@+id/usernameInputContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -31,34 +31,12 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/emailInputContainer"
-        android:layout_width="305dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        app:boxStrokeColor="@color/edit_text_stroke_color"
-        app:boxBackgroundMode="outline"
-        app:errorEnabled="true"
-        app:layout_constraintBottom_toTopOf="@+id/usernameInputContainer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/emailInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/email_hint"
-            android:inputType="text"
-            android:fontFamily="@font/noto_sans_bold"
-            android:padding="16dp" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/usernameInputContainer"
         android:layout_width="305dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        app:boxStrokeColor="@color/edit_text_stroke_color"
+        android:layout_marginBottom="80dp"
         app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/edit_text_stroke_color"
         app:errorEnabled="true"
         app:layout_constraintBottom_toTopOf="@+id/passwordInputContainer"
         app:layout_constraintEnd_toEndOf="parent"
@@ -68,9 +46,9 @@
             android:id="@+id/usernameInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/noto_sans_bold"
             android:hint="@string/username_hint"
             android:inputType="text"
-            android:fontFamily="@font/noto_sans_bold"
             android:padding="16dp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -78,12 +56,12 @@
         android:id="@+id/passwordInputContainer"
         android:layout_width="305dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        app:endIconMode="password_toggle"
+        android:layout_marginBottom="80dp"
         app:boxBackgroundMode="outline"
         app:boxStrokeColor="@color/edit_text_stroke_color"
-        app:errorEnabled="true"
+        app:endIconMode="password_toggle"
         app:endIconTint="?colorOnSurface"
+        app:errorEnabled="true"
         app:layout_constraintBottom_toTopOf="@id/submitLoginBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -92,11 +70,11 @@
             android:id="@+id/passwordInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/noto_sans_bold"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
-            android:textSize="15sp"
-            android:fontFamily="@font/noto_sans_bold"
-            android:padding="16dp" />
+            android:padding="16dp"
+            android:textSize="15sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton

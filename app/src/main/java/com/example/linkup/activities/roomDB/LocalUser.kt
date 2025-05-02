@@ -11,7 +11,5 @@ data class LocalUser(
     @ColumnInfo
     var password: String,
     @ColumnInfo
-    var email: String,
-    @ColumnInfo
     var name: String
 )

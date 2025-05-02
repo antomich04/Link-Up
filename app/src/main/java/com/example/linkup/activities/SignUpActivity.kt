@@ -25,11 +25,9 @@ import com.google.firebase.messaging.FirebaseMessaging
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var nameInput : TextInputEditText
-    private lateinit var emailInput : TextInputEditText
     private lateinit var usernameInput : TextInputEditText
     private lateinit var passwordInput : TextInputEditText
     private lateinit var nameInputContainer : TextInputLayout
-    private lateinit var emailInputContainer : TextInputLayout
     private lateinit var usernameInputContainer : TextInputLayout
     private lateinit var passwordInputContainer : TextInputLayout
     private lateinit var signupButton : Button
@@ -50,11 +48,9 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         nameInput = findViewById(R.id.nameInput)
-        emailInput = findViewById(R.id.emailInput)
         usernameInput = findViewById(R.id.usernameInput)
         passwordInput = findViewById(R.id.passwordInput)
         nameInputContainer = findViewById(R.id.nameInputContainer)
-        emailInputContainer = findViewById(R.id.emailInputContainer)
         usernameInputContainer = findViewById(R.id.usernameInputContainer)
         passwordInputContainer = findViewById(R.id.passwordInputContainer)
         signupButton = findViewById(R.id.submitLoginBtn)
@@ -85,7 +81,6 @@ class SignUpActivity : AppCompatActivity() {
                         //Creates a new user
                         val newUser = User(
                             name = nameInput.text.toString(),
-                            email = emailInput.text.toString(),
                             username = username,
                             password = passwordInput.text.toString()
                         )
@@ -93,7 +88,6 @@ class SignUpActivity : AppCompatActivity() {
                         //Creates a new user locally
                         val localUser = LocalUser(
                             name = nameInput.text.toString(),
-                            email = emailInput.text.toString(),
                             username = username,
                             password = passwordInput.text.toString()
                         )
@@ -119,6 +113,7 @@ class SignUpActivity : AppCompatActivity() {
 
                             val intent = Intent(this, HomePageActivity::class.java)
                             startActivity(intent)
+                            finish()
                         }, onFailure = {})
                     }
                 }, onFailure = {})
@@ -128,7 +123,6 @@ class SignUpActivity : AppCompatActivity() {
         rootLayout.setOnTouchListener { _, _ ->
             hideKeyboard()
             nameInput.clearFocus()
-            emailInput.clearFocus()
             usernameInput.clearFocus()
             passwordInput.clearFocus()
             false
@@ -149,12 +143,6 @@ class SignUpActivity : AppCompatActivity() {
             nameInputContainer.error = null
         }
 
-        if(emailInput.text!!.isEmpty()){
-            emailInputContainer.error = getString(R.string.email_error)
-        }else{
-            emailInputContainer.error= null
-        }
-
         if(usernameInput.text!!.isEmpty()){
             usernameInputContainer.error = getString(R.string.username_error)
         }else{
@@ -169,8 +157,7 @@ class SignUpActivity : AppCompatActivity() {
             passwordInputContainer.error = null
         }
 
-        val returnValue = nameInputContainer.error.isNullOrEmpty() && emailInputContainer.error.isNullOrEmpty() &&
-                          usernameInputContainer.error.isNullOrEmpty() && passwordInputContainer.error.isNullOrEmpty()
+        val returnValue = nameInputContainer.error.isNullOrEmpty() && usernameInputContainer.error.isNullOrEmpty() && passwordInputContainer.error.isNullOrEmpty()
         return returnValue
     }
 }

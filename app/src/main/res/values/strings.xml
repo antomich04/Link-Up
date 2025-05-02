@@ -33,9 +33,11 @@
     <string name="change_password">CHANGE PASSWORD</string>
     <string name="pref_language">Preferred Language:</string>
     <string name="delete_user">DELETE ACCOUNT</string>
-    <string name="delete_account_prompt">Are you sure you want to delete your account?</string>
     <string name="apply_changes">APPLY</string>
     <string name="new_username_hint">New Username</string>
     <string name="new_password_hint">New Password</string>
     <string name="invalid_password">Same password as the old one!</string>
+    <string name="blocked_users_page">BLOCKED USERS</string>
+    <string name="blocked_at">Blocked at: </string>
+    <string name="user_blocked">User is blocked!</string>
 </resources>

@@ -84,7 +84,7 @@ class LogInActivity : AppCompatActivity() {
 
                 client.loginUser(username, password, onSuccess ={
                     //Gets user name and email from Firestore
-                    client.getUserCredentials(username, onSuccess = { name, email ->
+                    client.getUserCredentials(username, onSuccess = { name ->
                         lifecycleScope.launch {
                             val existingUser = userViewModel.getUserByUsername(username)
                             if(existingUser==null){
@@ -92,7 +92,6 @@ class LogInActivity : AppCompatActivity() {
                                 val newUser = LocalUser(
                                     username = username,
                                     password = password,
-                                    email = email,
                                     name = name
                                 )
                                 val preferences = UserPreferences(

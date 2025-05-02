@@ -37,11 +37,7 @@ class AddFriend : Fragment(){
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.add_friend, container, false)
 
         backToFriendsBtn = view.findViewById(R.id.backToFriendsBtn)
@@ -99,6 +95,10 @@ class AddFriend : Fragment(){
                                     usernameInputContainer.error = when(exception.message){
                                         "Friend request already sent or already friends" ->
                                             getString(R.string.request_already_sent)
+                                        "User not found" ->
+                                            getString(R.string.user_not_found)
+                                        "User is blocked" ->
+                                            getString(R.string.user_blocked)
                                         else ->
                                             getString(R.string.request_failed)
                                     }

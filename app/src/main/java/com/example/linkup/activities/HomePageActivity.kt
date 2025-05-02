@@ -25,6 +25,7 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
 import com.example.linkup.activities.firestoreDB.Client
+import com.example.linkup.activities.fragments.BlockedUsers
 import com.google.firebase.messaging.FirebaseMessaging
 
 class HomePageActivity : AppCompatActivity() {
@@ -100,6 +101,9 @@ class HomePageActivity : AppCompatActivity() {
                 R.id.requestsPage -> {
                     supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, FriendRequests()).commit()
                 }
+                R.id.blockedUsersPage -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, BlockedUsers()).commit()
+                }
                 R.id.optionsPage -> {
                     supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Options()).commit()
                 }
@@ -108,6 +112,10 @@ class HomePageActivity : AppCompatActivity() {
                         val loggedInUser = userViewModel.getLoggedInUser()
                         if(loggedInUser!=null){
                             userViewModel.logOutUser(loggedInUser.username)
+                        }
+
+                        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                            client.removeToken(loggedInUser!!.username, token)
                         }
                     }
 

@@ -28,7 +28,7 @@ interface UserDao {
     @Delete
     suspend fun deleteUser(user: LocalUser)
 
-    @Query("SELECT * FROM Users WHERE username IN (SELECT username FROM User_Preferences WHERE isLoggedIn = 1) LIMIT 1")
+    @Query("SELECT * FROM Users WHERE EXISTS(SELECT 1 FROM User_Preferences WHERE User_Preferences.username = Users.username AND User_Preferences.isLoggedIn = 1) LIMIT 1")
     suspend fun getLoggedInUser(): LocalUser?
 
     //Used to dynamically change the username in the home page drawer if it changes
@@ -40,5 +40,14 @@ interface UserDao {
 
     @Query("UPDATE Users SET password = :newPassword WHERE username = :username")
     suspend fun changePassword(username: String, newPassword: String)
+
+    @Insert
+    suspend fun blockUser(block: Blocks)
+
+    @Query("DELETE FROM Blocks WHERE userUsername = :username AND blockedUsername = :blockedUsername")
+    suspend fun unblockUser(username: String, blockedUsername: String)
+
+    @Query("SELECT * FROM Blocks WHERE userUsername = :username ORDER BY blockedAt DESC")
+    fun getBlockedUsersList(username: String) : LiveData<List<Blocks>>
 
 }

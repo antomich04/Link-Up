@@ -23,11 +23,7 @@ class FriendRequests : Fragment() {
     private lateinit var adapter : FriendRequestsAdapter
     private lateinit var userViewModel: UserViewModel
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ):View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?):View? {
         val view = inflater.inflate(R.layout.friend_requests, container, false)
 
         val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
@@ -37,23 +33,15 @@ class FriendRequests : Fragment() {
 
         rvFriendRequests = view?.findViewById(R.id.rvFriendRequests)!!
         rvFriendRequests.layoutManager = LinearLayoutManager(requireContext())
-        adapter = FriendRequestsAdapter(
-            emptyList(),
+        adapter = FriendRequestsAdapter(emptyList(),
             onAccept = { requestId ->
-                client.acceptFriendRequest(
-                    requestId,
-                    onSuccess = {},
-                    onFailure = {ex -> }
-                )
+                client.acceptFriendRequest(requestId, onSuccess = {}, onFailure = {ex -> })
             },
             onReject = { requestId ->
-                client.rejectFriendRequest(
-                    requestId,
-                    onSuccess = {},
-                    onFailure = {ex -> }
-                )
+                client.rejectFriendRequest(requestId, onSuccess = {}, onFailure = {ex -> })
             }
         )
+
         rvFriendRequests.adapter = adapter
 
         //Initializes Room Database + ViewModel

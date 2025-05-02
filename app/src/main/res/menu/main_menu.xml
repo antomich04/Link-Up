@@ -18,6 +18,11 @@
             android:fontFamily="@font/noto_sans_bold"
             android:title="@string/requests_page" />
         <item
+            android:id="@+id/blockedUsersPage"
+            android:icon="@drawable/block_user"
+            android:fontFamily="@font/noto_sans_bold"
+            android:title="@string/blocked_users_page" />
+        <item
             android:id="@+id/optionsPage"
             android:icon="@drawable/settings"
             android:fontFamily="@font/noto_sans_bold"
