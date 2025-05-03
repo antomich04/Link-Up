@@ -32,7 +32,8 @@ exports.sendFriendRequestNotification = onDocumentCreated(
         type: "friend_request",
         sender: senderRef.id,
         title: "New Friend Request",
-        body: `${senderRef.id} has sent you a friend request!`
+        body: `${senderRef.id} has sent you a friend request!`,
+        target: "FriendRequests"
       }
     };
 
@@ -77,7 +78,8 @@ exports.sendFriendAcceptedNotification = onDocumentUpdated(
           type: "friend_accepted",
           receiver: receiverRef.id,
           title: "Friend Request Accepted",
-          body: `${receiverRef.id} has accepted your friend request!`
+          body: `${receiverRef.id} has accepted your friend request!`,
+          target: "Friends"
         }
       };
 

@@ -28,9 +28,10 @@ class FCMService : FirebaseMessagingService() {
         remoteMessage.data.let{ data ->
             val title = data["title"]
             val body = data["body"]
+            val target = data["target"]
 
-            val intent = NotificationRouter.createIntent(applicationContext)
-            val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
+            val intent = NotificationRouter.createIntent(applicationContext, target)
+            val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
             val notification = NotificationCompat.Builder(applicationContext, NotificationsHandler.REQUESTS_CHANNEL_ID)
                 .setSmallIcon(R.drawable.friends)

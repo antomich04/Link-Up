@@ -2,6 +2,8 @@ package com.example.linkup.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -84,7 +86,9 @@ class HomePageActivity : AppCompatActivity() {
             }
         }
 
-        if(savedInstanceState == null){
+        //Handles redirection from push notifications
+        handleNotificationNavigation(intent)
+        if(savedInstanceState == null && intent?.getStringExtra("targetFragment") == null){
             supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, HomePage()).commit()
         }
 
@@ -143,5 +147,31 @@ class HomePageActivity : AppCompatActivity() {
         }else{
             super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationNavigation(intent)
+    }
+
+
+    private fun handleNotificationNavigation(intent: Intent?) {
+        val targetFragment = intent?.getStringExtra("target") ?: return
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            val transaction = supportFragmentManager.beginTransaction()
+            when(targetFragment){
+                "FriendRequests" -> {
+                    navView.setCheckedItem(R.id.requestsPage)
+                    transaction.replace(R.id.fragmentContainer, FriendRequests())
+                }
+                "Friends" -> {
+                    navView.setCheckedItem(R.id.friendsPage)
+                    transaction.replace(R.id.fragmentContainer, Friends())
+                }
+            }
+            transaction.addToBackStack(null)
+            transaction.commit()
+        }, 300)
     }
 }
