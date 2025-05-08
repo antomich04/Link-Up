@@ -573,7 +573,7 @@ class Client{
         val chatDocRef = chatRef.document(chatId)
 
         chatDocRef.collection("messages")
-            .orderBy("timestamp")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshots, _ ->
                 val messages = snapshots?.mapNotNull { it.toObject(Message::class.java) } ?: emptyList()
                 messagesLiveData.postValue(messages)
