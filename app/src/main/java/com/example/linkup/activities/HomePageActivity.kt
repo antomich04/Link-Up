@@ -27,7 +27,9 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
 import com.example.linkup.activities.firestoreDB.Client
+import com.example.linkup.activities.fragments.About
 import com.example.linkup.activities.fragments.BlockedUsers
+import com.example.linkup.activities.fragments.ChatContainer
 import com.google.firebase.messaging.FirebaseMessaging
 
 class HomePageActivity : AppCompatActivity() {
@@ -111,6 +113,9 @@ class HomePageActivity : AppCompatActivity() {
                 R.id.optionsPage -> {
                     supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Options()).commit()
                 }
+                R.id.aboutPage -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, About()).commit()
+                }
                 R.id.logoutBtn -> {
                     lifecycleScope.launch{
                         val loggedInUser = userViewModel.getLoggedInUser()
@@ -168,6 +173,16 @@ class HomePageActivity : AppCompatActivity() {
                 "Friends" -> {
                     navView.setCheckedItem(R.id.friendsPage)
                     transaction.replace(R.id.fragmentContainer, Friends())
+                }
+                "Chat" -> {
+                    navView.setCheckedItem(R.id.homePage)
+                    val chatFragment = ChatContainer().apply {
+                        arguments = Bundle().apply {
+                            putString("loggedInUser", intent.getStringExtra("receiver")) // The logged-in user
+                            putString("friendUser", intent.getStringExtra("sender"))     // The sender of the message
+                        }
+                    }
+                    transaction.replace(R.id.fragmentContainer, chatFragment)
                 }
             }
             transaction.addToBackStack(null)

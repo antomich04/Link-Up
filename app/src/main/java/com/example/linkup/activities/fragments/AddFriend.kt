@@ -1,8 +1,6 @@
 package com.example.linkup.activities.fragments
 
-import android.app.NotificationManager
 import android.content.Context.INPUT_METHOD_SERVICE
-import android.content.Context.NOTIFICATION_SERVICE
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +28,6 @@ class AddFriend : Fragment(){
     private lateinit var usernameInputContainer: TextInputLayout
     private lateinit var client : Client
     private lateinit var userViewModel: UserViewModel
-    private var notificationsManager: NotificationManager? = null
     private lateinit var notificationsHandler: NotificationsHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +43,6 @@ class AddFriend : Fragment(){
         usernameInputContainer = view.findViewById(R.id.usernameInputContainer)
         client = Client()
 
-        notificationsManager = requireContext().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationsHandler = NotificationsHandler(requireContext())
         notificationsHandler.createNotificationChannel(REQUESTS_CHANNEL_ID, "Requests", "This channel provides information about the user's friend requests")
 

@@ -15,7 +15,7 @@
         android:layout_marginEnd="112dp"
         android:layout_marginBottom="36dp"
         app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/edit_text_stroke_color"
+        app:boxStrokeColor="@color/stroke_color"
         app:errorEnabled="true"
         app:layout_constraintBottom_toTopOf="@+id/usernameInputContainer"
         app:layout_constraintEnd_toEndOf="parent">
@@ -38,7 +38,7 @@
         android:layout_marginEnd="112dp"
         android:layout_marginBottom="36dp"
         app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/edit_text_stroke_color"
+        app:boxStrokeColor="@color/stroke_color"
         app:errorEnabled="true"
         app:layout_constraintBottom_toTopOf="@+id/passwordInputContainer"
         app:layout_constraintEnd_toEndOf="parent">
@@ -61,7 +61,7 @@
         android:layout_marginEnd="112dp"
         android:layout_marginBottom="16dp"
         app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/edit_text_stroke_color"
+        app:boxStrokeColor="@color/stroke_color"
         app:endIconMode="password_toggle"
         app:endIconTint="?colorOnSurface"
         app:errorEnabled="true"

@@ -92,3 +92,51 @@ exports.sendFriendAcceptedNotification = onDocumentUpdated(
     }
   }
 );
+
+exports.sendMessageNotification = onDocumentCreated(
+  "Chats/{chatId}/messages/{messageId}",
+  async (event) => {
+    const snapshot = event.data;
+
+    if(!snapshot){
+        return;
+    }
+
+    const message = snapshot.data();
+    const { sender, receiver, text } = message;
+
+    if(!sender || !receiver || !text){
+        return;
+    }
+
+    const senderDoc = await admin.firestore().collection("Users").doc(sender).get();
+    const receiverDoc = await admin.firestore().collection("Users").doc(receiver).get();
+
+    const senderTokens = senderDoc.data()?.tokens || [];
+    const receiverTokens = receiverDoc.data()?.tokens || [];
+
+    //Filters out any tokens that belong to the sender
+    const tokensToNotify = receiverTokens.filter(token => !senderTokens.includes(token));
+
+    if(tokensToNotify.length === 0){
+      return;
+    }
+
+    const payload = {
+      data: {
+        type: "new_message",
+        sender,
+        title: `New message from ${sender}`,
+        body: text,
+        target: "Chat"
+      }
+    };
+
+    const messages = tokensToNotify.map(token => ({
+      ...payload,
+      token
+    }));
+
+    await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+  }
+);

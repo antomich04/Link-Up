@@ -28,6 +28,11 @@
             android:fontFamily="@font/noto_sans_bold"
             android:title="@string/options_page" />
         <item
+            android:id="@+id/aboutPage"
+            android:icon="@drawable/about_icon"
+            android:fontFamily="@font/noto_sans_bold"
+            android:title="@string/about_page" />
+        <item
             android:id="@+id/logoutBtn"
             android:icon="@drawable/logout"
             android:fontFamily="@font/noto_sans_bold"

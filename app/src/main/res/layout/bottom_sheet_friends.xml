@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?colorSurfaceContainerHigh">
+
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:id="@+id/dismissHandler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorSurfaceContainerHighest"/>
+
+    <TextView
+        android:id="@+id/senderUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textSize="32sp"
+        android:singleLine="true"
+        android:fontFamily="@font/noto_sans_bold"
+        android:text="@string/new_chat_prompt"
+        android:layout_gravity="center"
+        android:background="?colorSurfaceContainerHigh"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorSurfaceContainerHigh"/>
+
+</LinearLayout>

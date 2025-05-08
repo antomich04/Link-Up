@@ -1,7 +1,5 @@
 package com.example.linkup.activities.fragments
 
-import android.app.NotificationManager
-import android.content.Context.NOTIFICATION_SERVICE
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -26,7 +24,6 @@ class BlockedUsers : Fragment() {
     private lateinit var rvBlockedUsers : RecyclerView
     private lateinit var userViewModel: UserViewModel
     private lateinit var client : Client
-    private lateinit var notificationsManager: NotificationManager
     private lateinit var notificationsHandler: NotificationsHandler
     private lateinit var blockedUsersAdapter: BlockedUsersAdapter
 
@@ -38,11 +35,10 @@ class BlockedUsers : Fragment() {
         val factory = UserViewModelFactory(userDao)
         userViewModel = factory.create(UserViewModel::class.java)
         client = Client()
-        notificationsManager = requireContext().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationsHandler = NotificationsHandler(requireContext())
 
         rvBlockedUsers = view.findViewById(R.id.rvBlockedUsers)
-        rvBlockedUsers.layoutManager = LinearLayoutManager(context)
+        rvBlockedUsers.layoutManager = LinearLayoutManager(requireContext())
         blockedUsersAdapter = BlockedUsersAdapter(emptyList(), client, userViewModel, notificationsHandler)
         rvBlockedUsers.adapter = blockedUsersAdapter
 

@@ -48,7 +48,7 @@ class BlockedUsersAdapter(
         fun bind(blocks: Blocks){
 
             blockedUserUsername.text = blocks.blockedUsername
-            val formatter = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+            val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
             val formattedDate = formatter.format(Date(blocks.blockedAt))
             blockedAtTxt.text = "Blocked at: $formattedDate"
 

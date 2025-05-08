@@ -40,4 +40,8 @@
     <string name="blocked_users_page">BLOCKED USERS</string>
     <string name="blocked_at">Blocked at: </string>
     <string name="user_blocked">User is blocked!</string>
+    <string name="new_chat_prompt">SELECT A FRIEND</string>
+    <string name="about_page">ABOUT</string>
+    <string name="message_prompt">Type your message...</string>
+    <string name="seen">✔️✔️</string>
 </resources>

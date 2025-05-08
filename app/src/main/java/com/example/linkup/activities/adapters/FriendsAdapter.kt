@@ -5,8 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.linkup.R
+import com.example.linkup.activities.firestoreDB.ChatViewModel
 import com.example.linkup.activities.firestoreDB.Client
 import com.example.linkup.activities.firestoreDB.Friendship
 import com.example.linkup.activities.notifications.NotificationsHandler
@@ -56,7 +59,6 @@ class FriendsAdapter(private val context: Context,
 
     inner class ViewHolder(private val view : View) : RecyclerView.ViewHolder(view){
         private val friendUsername = view.findViewById<TextView>(R.id.friendUsername)
-        private val messageBtn = view.findViewById<FloatingActionButton>(R.id.messageBtn)
         private val blockUserBtn = view.findViewById<FloatingActionButton>(R.id.blockUserBtn)
         private val removeFriendBtn = view.findViewById<FloatingActionButton>(R.id.removeFriendBtn)
 
@@ -69,13 +71,6 @@ class FriendsAdapter(private val context: Context,
                 }
             friendUsername.text = displayedUsername
 
-
-
-            messageBtn.setOnClickListener{
-                //Add functionality
-            }
-
-
             removeFriendBtn.setOnClickListener{
                 MaterialAlertDialogBuilder(context)
                     .setTitle("Friend removal confirmation")
@@ -84,11 +79,21 @@ class FriendsAdapter(private val context: Context,
                         dialog.dismiss()
                     }
                     .setPositiveButton("Confirm"){ dialog, _ ->
-                        client.removeFriend(loggedinUsername, displayedUsername){
-                            notificationHandler.createNotificationChannel(FRIENDS_CHANNEL_ID, "Friends", "This channel provides information about the user's friends related actions")
-                            notificationHandler.showRemovedFriendNotification(displayedUsername)
+                        client.removeFriend(loggedinUsername, displayedUsername) {
+                            client.deleteChat(loggedinUsername, displayedUsername) {
+                                (context as? FragmentActivity)?.let { activity ->
+                                    ViewModelProvider(activity)[ChatViewModel::class.java]
+                                        .removeChat(client.getChatId(loggedinUsername, displayedUsername))
+                                }
+                                notificationHandler.createNotificationChannel(
+                                    FRIENDS_CHANNEL_ID,
+                                    "Friends",
+                                    "This channel provides information about the user's friends related actions"
+                                )
+                                notificationHandler.showRemovedFriendNotification(displayedUsername)
 
-                            onFriendRemoved?.invoke()
+                                onFriendRemoved?.invoke()
+                            }
                         }
                         dialog.dismiss()
                     }
@@ -104,15 +109,35 @@ class FriendsAdapter(private val context: Context,
                         dialog.dismiss()
                     }
                     .setPositiveButton("Confirm"){ dialog, _ ->
-                        client.blockUser(loggedinUsername, displayedUsername){
-                            userViewModel.blockUser(Blocks(loggedinUsername, displayedUsername, System.currentTimeMillis()))
-                            notificationHandler.createNotificationChannel(FRIENDS_CHANNEL_ID, "Friends", "This channel provides information about the user's friends related actions")
-                            notificationHandler.showBlockedUserNotification(displayedUsername)
+                        client.blockUser(loggedinUsername, displayedUsername) {
+                            client.deleteChat(loggedinUsername, displayedUsername) {
+                                (context as? FragmentActivity)?.let { activity ->
+                                    ViewModelProvider(activity)[ChatViewModel::class.java]
+                                        .removeChat(
+                                            client.getChatId(
+                                                loggedinUsername,
+                                                displayedUsername
+                                            )
+                                        )
+                                }
+                                userViewModel.blockUser(
+                                    Blocks(
+                                        loggedinUsername,
+                                        displayedUsername,
+                                        System.currentTimeMillis()
+                                    )
+                                )
+                                notificationHandler.createNotificationChannel(
+                                    FRIENDS_CHANNEL_ID,
+                                    "Friends",
+                                    "This channel provides information about the user's friends related actions"
+                                )
+                                notificationHandler.showBlockedUserNotification(displayedUsername)
+                            }
                         }
                         dialog.dismiss()
                     }
                     .show()
-
             }
         }
     }

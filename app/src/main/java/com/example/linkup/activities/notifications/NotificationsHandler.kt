@@ -84,5 +84,6 @@ class NotificationsHandler(private val context : Context) {
         const val REQUESTS_CHANNEL_ID = "Requests"
         const val SETTINGS_CHANNEL_ID = "Settings"
         const val FRIENDS_CHANNEL_ID = "Friends"
+        const val MESSAGES_CHANNEL_ID = "Messages"
     }
 }

@@ -1,8 +1,6 @@
 package com.example.linkup.activities.fragments
 
-import android.app.NotificationManager
 import android.content.Context.INPUT_METHOD_SERVICE
-import android.content.Context.NOTIFICATION_SERVICE
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +28,6 @@ class ChangeUsername : Fragment() {
     private lateinit var newUsernameInputContainer: TextInputLayout
     private lateinit var client : Client
     private lateinit var userViewModel: UserViewModel
-    private var notificationsManager: NotificationManager? = null
     private lateinit var notificationsHandler: NotificationsHandler
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -48,7 +45,6 @@ class ChangeUsername : Fragment() {
         val factory = UserViewModelFactory(userDao)
         userViewModel = factory.create(UserViewModel::class.java)
 
-        notificationsManager = requireContext().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationsHandler = NotificationsHandler(requireContext())
         notificationsHandler.createNotificationChannel(SETTINGS_CHANNEL_ID, "Settings", "This channel provides information about the user's account related actions")
 
@@ -78,7 +74,7 @@ class ChangeUsername : Fragment() {
                     }else{
                         userViewModel.changeUsername(newUsername, loggedinUser.username)
                         client.changeUsername(newUsername, loggedinUser.username, onSuccess = {
-                            client.updateFriendReferences(loggedinUser.username, newUsername, onComplete = {
+                            client.updateUserReferences(loggedinUser.username, newUsername, onComplete = {
                                 requireActivity().runOnUiThread {
                                     notificationsHandler.showChangedUsernameNotification()
                                     parentFragmentManager.popBackStack()

@@ -1,8 +1,6 @@
 package com.example.linkup.activities.fragments
 
-import android.app.NotificationManager
 import android.content.Context.INPUT_METHOD_SERVICE
-import android.content.Context.NOTIFICATION_SERVICE
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +28,6 @@ class ChangePassword : Fragment() {
     private lateinit var changePasswordBtn : Button
     private lateinit var client : Client
     private lateinit var userViewModel: UserViewModel
-    private var notificationsManager: NotificationManager? = null
     private lateinit var notificationsHandler: NotificationsHandler
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -48,7 +45,6 @@ class ChangePassword : Fragment() {
         val factory = UserViewModelFactory(userDao)
         userViewModel = factory.create(UserViewModel::class.java)
 
-        notificationsManager = requireContext().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationsHandler = NotificationsHandler(requireContext())
         notificationsHandler.createNotificationChannel(SETTINGS_CHANNEL_ID, "Settings", "This channel provides information about the user's account related actions")
 

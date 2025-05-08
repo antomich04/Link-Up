@@ -18,22 +18,33 @@ class FCMService : FirebaseMessagingService() {
 
         val sharedPref = getSharedPreferences("userPrefs", MODE_PRIVATE)
         val username = sharedPref.getString("loggedInUsername", null)
-        if(username!=null){
+        if (username != null) {
             client.saveToken(username, token)
         }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        remoteMessage.data.let{ data ->
+        remoteMessage.data.let { data ->
             val title = data["title"]
             val body = data["body"]
             val target = data["target"]
 
             val intent = NotificationRouter.createIntent(applicationContext, target)
-            val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingIntent = PendingIntent.getActivity(
+                applicationContext,
+                0,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
-            val notification = NotificationCompat.Builder(applicationContext, NotificationsHandler.REQUESTS_CHANNEL_ID)
+            //Uses different channels based on the target type
+            val channelId = when (target) {
+                "Chat" -> NotificationsHandler.MESSAGES_CHANNEL_ID
+                else -> NotificationsHandler.REQUESTS_CHANNEL_ID
+            }
+
+            val notification = NotificationCompat.Builder(applicationContext, channelId)
                 .setSmallIcon(R.drawable.friends)
                 .setContentTitle(title)
                 .setContentText(body)
