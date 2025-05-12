@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
@@ -329,95 +330,150 @@ class Client{
         }.addOnFailureListener { exception -> onFailure(exception) }
     }
 
-    fun updateUserReferences(oldUsername: String, newUsername: String, onComplete: () -> Unit) {
+
+    fun updateUserReferences(oldUsername: String, newUsername: String, onComplete: () -> Unit){
         val oldUserRef = userRef.document(oldUsername)
         val newUserRef = userRef.document(newUsername)
 
+        //Creates a batch for document updates
         val batch = db.batch()
 
-        val tasks = listOf(
+        //Updates all references except chats
+        val basicReferenceTasks = listOf(
             friendRequestRef.whereEqualTo("sender", oldUserRef).get(),
             friendRequestRef.whereEqualTo("receiver", oldUserRef).get(),
             friendshipRef.whereEqualTo("userUsername", oldUserRef).get(),
             friendshipRef.whereEqualTo("friendUsername", oldUserRef).get(),
-            blocksRef.whereEqualTo("userUsername", oldUsername).get(),
+            blocksRef.whereEqualTo("userUsername", oldUsername).get()
+        )
+
+        //Handles chat updates separately
+        val chatQueryTasks = listOf(
             chatRef.whereEqualTo("sender", oldUsername).get(),
             chatRef.whereEqualTo("receiver", oldUsername).get()
         )
 
-        Tasks.whenAllSuccess<QuerySnapshot>(tasks)
-            .addOnSuccessListener { results ->
-                val sentRequests = results[0]
-                val receivedRequests = results[1]
-                val sentFriends = results[2]
-                val receivedFriends = results[3]
-                val blocks = results[4]
-                val sentChats = results[5]
-                val receivedChats = results[6]
+        Tasks.whenAllSuccess<QuerySnapshot>(basicReferenceTasks).addOnSuccessListener{ results ->
+            val sentRequests = results[0]
+            val receivedRequests = results[1]
+            val sentFriends = results[2]
+            val receivedFriends = results[3]
+            val blocks = results[4]
 
-                sentRequests.forEach { doc -> batch.update(doc.reference, "sender", newUserRef) }
-                receivedRequests.forEach { doc -> batch.update(doc.reference, "receiver", newUserRef) }
-                sentFriends.forEach { doc -> batch.update(doc.reference, "userUsername", newUserRef) }
-                receivedFriends.forEach { doc -> batch.update(doc.reference, "friendUsername", newUserRef) }
-                blocks.forEach { doc -> batch.update(doc.reference, "userUsername", newUsername) }
+            sentRequests.forEach { doc -> batch.update(doc.reference, "sender", newUserRef) }
+            receivedRequests.forEach { doc -> batch.update(doc.reference, "receiver", newUserRef) }
+            sentFriends.forEach { doc -> batch.update(doc.reference, "userUsername", newUserRef) }
+            receivedFriends.forEach { doc -> batch.update(doc.reference, "friendUsername", newUserRef) }
+            blocks.forEach { doc -> batch.update(doc.reference, "userUsername", newUsername) }
 
+            //Handles chat migrations
+            Tasks.whenAllSuccess<QuerySnapshot>(chatQueryTasks).addOnSuccessListener { chatResults ->
+                val sentChats = chatResults[0]
+                val receivedChats = chatResults[1]
+
+                //Gets all unique chat documents that need to be migrated
                 val chatDocsToUpdate = (sentChats + receivedChats).distinctBy { it.id }
 
-                val messageUpdateTasks = mutableListOf<Task<Void>>()
-
-                for (chatDoc in chatDocsToUpdate) {
-                    val chatRefDoc = chatRef.document(chatDoc.id)
-
-                    val chatUpdates = mutableMapOf<String, Any>()
-                    if (chatDoc.getString("sender") == oldUsername) {
-                        chatUpdates["sender"] = newUsername
+                //If there are no chats to update, commits the batch and finishes
+                if(chatDocsToUpdate.isEmpty()){
+                    batch.commit().addOnCompleteListener {
+                        onComplete()
                     }
-                    if (chatDoc.getString("receiver") == oldUsername) {
-                        chatUpdates["receiver"] = newUsername
+                    return@addOnSuccessListener
+                }
+
+                //For tracking completion of all chat migrations
+                val chatMigrationTasks = mutableListOf<Task<*>>()
+
+                //Processes each chat document
+                for(chatDoc in chatDocsToUpdate){
+                    val oldChatDocRef = chatRef.document(chatDoc.id)
+                    val chatData = chatDoc.data ?: continue
+
+                    //Determines the other user in the chat
+                    val sender = chatData["sender"] as? String ?: continue
+                    val receiver = chatData["receiver"] as? String ?: continue
+
+                    val otherUser = if(sender == oldUsername) receiver else sender
+
+                    //Calculates the old and new chat IDs
+                    val oldChatId = getChatId(oldUsername, otherUser)
+                    val newChatId = getChatId(newUsername, otherUser)
+
+                    //Skips if the chat ID doesn't need to change
+                    if(oldChatId == newChatId){
+                        continue
                     }
-                    if (chatUpdates.isNotEmpty()) {
-                        batch.update(chatRefDoc, chatUpdates)
+
+                    val newChatDocRef = chatRef.document(newChatId)
+
+                    //Updates the sender/receiver fields in the chat data
+                    val updatedChatData = HashMap(chatData)
+                    if(sender == oldUsername){
+                        updatedChatData["sender"] = newUsername
+                    }else{
+                        updatedChatData["receiver"] = newUsername
                     }
 
-                    val messagesCol = chatRefDoc.collection("messages")
-                    val messageQuery = messagesCol
-                        .whereIn("sender", listOf(oldUsername))
-                        .get()
+                    //Creates a migration task for this chat and its messages
+                    val chatMigrationTask = oldChatDocRef.collection("messages").get()
+                        .continueWithTask { messagesTask ->
+                            newChatDocRef.set(updatedChatData).continueWithTask{
+                                //Gets messages from the old chat
+                                val messageDocs = messagesTask.result?.documents ?: emptyList()
 
-                    val receiverMessageQuery = messagesCol
-                        .whereIn("receiver", listOf(oldUsername))
-                        .get()
+                                //If there are no messages, returns early
+                                if(messageDocs.isEmpty()){
+                                    return@continueWithTask Tasks.forResult(null)
+                                }
 
-                    val combinedTask = Tasks.whenAllSuccess<QuerySnapshot>(
-                        listOf(messageQuery, receiverMessageQuery)
-                    ).continueWithTask { queryTask ->
-                        val messageDocs = queryTask.result?.flatMap { it.documents } ?: emptyList()
+                                //Creates tasks to migrate each message
+                                val messageWriteTasks = messageDocs.map{ msgDoc ->
+                                    val msgData = msgDoc.data ?: return@map Tasks.forResult(null)
 
-                        messageDocs.forEach { msgDoc ->
-                            val updates = mutableMapOf<String, Any>()
-                            if (msgDoc.getString("sender") == oldUsername) {
-                                updates["sender"] = newUsername
+                                    //Updates sender/receiver in message data if needed
+                                    val updatedMsgData = HashMap(msgData)
+                                    if((msgData["sender"] as? String) == oldUsername){
+                                        updatedMsgData["sender"] = newUsername
+                                    }
+                                    if((msgData["receiver"] as? String) == oldUsername){
+                                        updatedMsgData["receiver"] = newUsername
+                                    }
+
+                                    //Adds a migrated flag to indicate this message is copied
+                                    updatedMsgData["migrated"] = true
+
+                                    //Creates the message in the new location
+                                    newChatDocRef.collection("messages").document(msgDoc.id).set(updatedMsgData)
+                                }
+
+                                //Waits for all message migrations to complete
+                                Tasks.whenAllComplete(messageWriteTasks)
                             }
-                            if (msgDoc.getString("receiver") == oldUsername) {
-                                updates["receiver"] = newUsername
-                            }
-                            if (updates.isNotEmpty()) {
-                                batch.update(msgDoc.reference, updates)
+                        }
+                        .continueWithTask{
+                            //Deletes the old chat document and its messages after migration
+                            oldChatDocRef.collection("messages").get().continueWithTask{ messagesSnapshot ->
+                                val batch = db.batch()
+                                messagesSnapshot.result?.documents?.forEach { doc ->
+                                    batch.delete(doc.reference)
+                                }
+                                batch.delete(oldChatDocRef)
+                                batch.commit()
                             }
                         }
 
-                        Tasks.forResult(null as Void)
-                    }
-
-                    messageUpdateTasks.add(combinedTask)
+                    chatMigrationTasks.add(chatMigrationTask)
                 }
 
-                Tasks.whenAllComplete(messageUpdateTasks).addOnCompleteListener {
+                //When all chat migrations are complete, commits the batch with other reference updates
+                Tasks.whenAllComplete(chatMigrationTasks).addOnCompleteListener{
                     batch.commit().addOnCompleteListener {
                         onComplete()
                     }
                 }
             }
+        }
     }
 
     fun changePassword(username: String, newPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
@@ -497,40 +553,86 @@ class Client{
         val userRef = userRef.document(username)
         val batch = db.batch()
 
-        //Deletes user document
-        batch.delete(userRef)
+        //Gets all chats involving the user
+        chatRef.whereEqualTo("sender", username).get()
+            .addOnSuccessListener { senderChats ->
+                senderChats.documents.forEach { chatDoc ->
+                    val chatId = chatDoc.id
+                    val chatDocRef = chatRef.document(chatId)
+                    val messagesCollection = chatDocRef.collection("messages")
 
-        //Deletes all friend requests involving the user (both sent and received)
-        friendRequestRef.whereEqualTo("sender", userRef).get()
-            .addOnSuccessListener { sentRequests ->
-                sentRequests.documents.forEach { doc ->
-                    batch.delete(doc.reference)
+                    //Deletes all messages in the chat
+                    messagesCollection.get()
+                        .addOnSuccessListener { messagesSnapshot ->
+                            val messageDeleteBatch = db.batch()
+                            messagesSnapshot.documents.forEach { messageDoc ->
+                                messageDeleteBatch.delete(messageDoc.reference)
+                            }
+
+                            messageDeleteBatch.commit()
+                                .addOnSuccessListener {
+                                    batch.delete(chatDocRef)
+                                }
+                        }
                 }
 
-                //Received friend requests
-                friendRequestRef.whereEqualTo("receiver", userRef).get()
-                    .addOnSuccessListener { receivedRequests ->
-                        receivedRequests.documents.forEach { doc ->
-                            batch.delete(doc.reference)
+                //Same for chats where the user is the receiver
+                chatRef.whereEqualTo("receiver", username).get()
+                    .addOnSuccessListener { receiverChats ->
+                        receiverChats.documents.forEach { chatDoc ->
+                            val chatId = chatDoc.id
+                            val chatDocRef = chatRef.document(chatId)
+                            val messagesCollection = chatDocRef.collection("messages")
+
+                            messagesCollection.get()
+                                .addOnSuccessListener { messagesSnapshot ->
+                                    val messageDeleteBatch = db.batch()
+                                    messagesSnapshot.documents.forEach { messageDoc ->
+                                        messageDeleteBatch.delete(messageDoc.reference)
+                                    }
+
+                                    messageDeleteBatch.commit()
+                                        .addOnSuccessListener {
+                                            batch.delete(chatDocRef)
+                                        }
+                                }
                         }
 
-                        //Deletes all friendships involving the user
-                        friendshipRef.whereEqualTo("userUsername", userRef).get()
-                            .addOnSuccessListener { userFriendships ->
-                                userFriendships.documents.forEach { doc ->
+                        //Deletes all friend requests involving the user
+                        friendRequestRef.whereEqualTo("sender", userRef).get()
+                            .addOnSuccessListener { sentRequests ->
+                                sentRequests.documents.forEach { doc ->
                                     batch.delete(doc.reference)
                                 }
 
-                                friendshipRef.whereEqualTo("friendUsername", userRef).get()
-                                    .addOnSuccessListener { friendFriendships ->
-                                        friendFriendships.documents.forEach { doc ->
+                                friendRequestRef.whereEqualTo("receiver", userRef).get()
+                                    .addOnSuccessListener { receivedRequests ->
+                                        receivedRequests.documents.forEach { doc ->
                                             batch.delete(doc.reference)
                                         }
 
-                                        //Commits all operations
-                                        batch.commit()
-                                            .addOnSuccessListener{
-                                                onSuccess()
+                                        //Deletes all friendships involving the user
+                                        friendshipRef.whereEqualTo("userUsername", userRef).get()
+                                            .addOnSuccessListener { userFriendships ->
+                                                userFriendships.documents.forEach { doc ->
+                                                    batch.delete(doc.reference)
+                                                }
+
+                                                friendshipRef.whereEqualTo("friendUsername", userRef).get()
+                                                    .addOnSuccessListener { friendFriendships ->
+                                                        friendFriendships.documents.forEach { doc ->
+                                                            batch.delete(doc.reference)
+                                                        }
+
+                                                        //Deletes the user document
+                                                        batch.delete(userRef)
+
+                                                        //Commits all operations after deleting chats, messages, and related data
+                                                        batch.commit()
+                                                            .addOnSuccessListener {
+                                                                onSuccess()
+                                                            }
+                                                    }
                                             }
                                     }
                             }
@@ -606,14 +708,14 @@ class Client{
 
         chatDocRef.get().addOnSuccessListener { docSnapshot ->
             if(!docSnapshot.exists()){
-                val chat = Chat(
-                    id = chatId,
-                    sender = userUsername,
-                    receiver = friendUsername,
-                    lastMessage = "",
-                    timestamp = System.currentTimeMillis()
+                val chatMap = hashMapOf(
+                    "id" to chatId,
+                    "sender" to userUsername,
+                    "receiver" to friendUsername,
+                    "lastMessage" to "",
+                    "timestamp" to FieldValue.serverTimestamp()
                 )
-                chatDocRef.set(chat)
+                chatDocRef.set(chatMap)
             }
         }
     }
@@ -628,33 +730,34 @@ class Client{
     fun sendMessage(sender: String, receiver: String, text: String, onSuccess: () -> Unit) {
         val chatId = getChatId(sender, receiver)
         val chatDocRef = chatRef.document(chatId)
-        val message = Message(
-            sender = sender,
-            receiver = receiver,
-            text = text,
-            timestamp = System.currentTimeMillis()
-        )
-
-        //Updates the chat document with the new message info
-        chatDocRef.update(
-            mapOf(
-                "lastMessage" to message.text,
-                "timestamp" to message.timestamp
-            )
-        )
-
-        //Saves the new message in the subcollection
         val messagesCollection = chatDocRef.collection("messages")
         val newMessageRef = messagesCollection.document()
-        message.id = newMessageRef.id
 
-        newMessageRef.set(message)
+        //Prepares message map to use server timestamp
+        val messageMap = hashMapOf(
+            "id" to newMessageRef.id,
+            "sender" to sender,
+            "receiver" to receiver,
+            "text" to text,
+            "timestamp" to FieldValue.serverTimestamp(),
+            "seen" to false,
+            "seenTimestamp" to null
+        )
+
+        newMessageRef.set(messageMap)
             .addOnSuccessListener {
+                //Updates chat with last message and server timestamp
+                chatDocRef.update(
+                    mapOf(
+                        "lastMessage" to text,
+                        "timestamp" to FieldValue.serverTimestamp()
+                    )
+                )
                 onSuccess()
             }
     }
 
-    fun markMessagesAsSeen(userUsername: String, friendUsername: String, lastOpenedTime: Long) {
+    fun markMessagesAsSeen(userUsername: String, friendUsername: String) {
         val chatId = getChatId(userUsername, friendUsername)
         val chatDocRef = chatRef.document(chatId)
 
@@ -662,7 +765,6 @@ class Client{
             .whereEqualTo("receiver", userUsername)
             .whereEqualTo("sender", friendUsername)
             .whereEqualTo("seen", false)
-            .whereLessThanOrEqualTo("timestamp", lastOpenedTime)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if(querySnapshot.isEmpty){
@@ -670,14 +772,14 @@ class Client{
                 }
 
                 val batch = db.batch()
-                val currentTime = System.currentTimeMillis()
+                val now = Timestamp.now()
 
                 querySnapshot.documents.forEach { document ->
                     val messageRef = chatDocRef.collection("messages").document(document.id)
                     batch.update(messageRef,
                         mapOf(
                             "seen" to true,
-                            "seenTimestamp" to currentTime
+                            "seenTimestamp" to now
                         )
                     )
                 }
@@ -716,10 +818,11 @@ class Client{
             .collection("messages")
             .document(messageId)
             .delete()
-            .addOnSuccessListener {
+            .addOnSuccessListener{
                 //Finds the new last message by timestamp
                 chatRef.document(chatId)
                     .collection("messages")
+                    .whereNotEqualTo("timestamp", null)
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .limit(1)
                     .get()

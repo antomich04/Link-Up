@@ -89,8 +89,8 @@ class HomePageActivity : AppCompatActivity() {
         }
 
         //Handles redirection from push notifications
-        handleNotificationNavigation(intent)
-        if(savedInstanceState == null && intent?.getStringExtra("targetFragment") == null){
+        if(savedInstanceState == null){
+            handleNotificationNavigation(intent)
             supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, HomePage()).commit()
         }
 
@@ -99,22 +99,22 @@ class HomePageActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener { menuItem ->
             when(menuItem.itemId){
                 R.id.homePage -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, HomePage()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, HomePage(), "HomePage").commit()
                 }
                 R.id.friendsPage -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Friends()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Friends(), "Friends").commit()
                 }
                 R.id.requestsPage -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, FriendRequests()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, FriendRequests(), "FriendRequests").commit()
                 }
                 R.id.blockedUsersPage -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, BlockedUsers()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, BlockedUsers(), "BlockedUsers").commit()
                 }
                 R.id.optionsPage -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Options()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Options(), "Options").commit()
                 }
                 R.id.aboutPage -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, About()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, About(), "About").commit()
                 }
                 R.id.logoutBtn -> {
                     lifecycleScope.launch{
@@ -164,29 +164,42 @@ class HomePageActivity : AppCompatActivity() {
         val targetFragment = intent?.getStringExtra("target") ?: return
 
         Handler(Looper.getMainLooper()).postDelayed({
-            val transaction = supportFragmentManager.beginTransaction()
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+
             when(targetFragment){
                 "FriendRequests" -> {
-                    navView.setCheckedItem(R.id.requestsPage)
-                    transaction.replace(R.id.fragmentContainer, FriendRequests())
+                    if(currentFragment !is FriendRequests){
+                        navView.setCheckedItem(R.id.requestsPage)
+                        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, FriendRequests(), "FriendRequests").commit()
+                    }
                 }
                 "Friends" -> {
-                    navView.setCheckedItem(R.id.friendsPage)
-                    transaction.replace(R.id.fragmentContainer, Friends())
+                    if(currentFragment !is Friends){
+                        navView.setCheckedItem(R.id.friendsPage)
+                        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, Friends(), "Friends").commit()
+                    }
                 }
                 "Chat" -> {
-                    navView.setCheckedItem(R.id.homePage)
-                    val chatFragment = ChatContainer().apply {
-                        arguments = Bundle().apply {
-                            putString("loggedInUser", intent.getStringExtra("receiver")) // The logged-in user
-                            putString("friendUser", intent.getStringExtra("sender"))     // The sender of the message
+                    if(currentFragment !is ChatContainer){
+                        navView.setCheckedItem(R.id.homePage)
+                        val chatFragment = ChatContainer().apply {
+                            arguments = Bundle().apply {
+                                putString("loggedInUser", intent.getStringExtra("receiver"))
+                                putString("friendUser", intent.getStringExtra("sender"))
+                            }
+                        }
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.fragmentContainer, chatFragment, "ChatContainer")
+                            .commit()
+                    }else{
+                        //Already in the chat fragment, updates the arguments if needed
+                        currentFragment.arguments = Bundle().apply {
+                            putString("loggedInUser", intent.getStringExtra("receiver"))
+                            putString("friendUser", intent.getStringExtra("sender"))
                         }
                     }
-                    transaction.replace(R.id.fragmentContainer, chatFragment)
                 }
             }
-            transaction.addToBackStack(null)
-            transaction.commit()
         }, 300)
     }
 }

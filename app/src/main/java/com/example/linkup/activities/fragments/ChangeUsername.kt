@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.linkup.R
@@ -38,6 +39,9 @@ class ChangeUsername : Fragment() {
         newUsernameTxt = view.findViewById(R.id.newUsernameInput)
         newUsernameInputContainer = view.findViewById(R.id.newUsernameInputContainer)
         client = Client()
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar?.setTitle("CHANGE USERNAME")
 
         //Initializes Room Database + ViewModel
         val database = LocalDatabase.getDB(requireContext())
@@ -72,9 +76,9 @@ class ChangeUsername : Fragment() {
                         newUsernameInputContainer.error = getString(R.string.username_taken)
                         return@checkIfUsernameExists
                     }else{
-                        userViewModel.changeUsername(newUsername, loggedinUser.username)
                         client.changeUsername(newUsername, loggedinUser.username, onSuccess = {
                             client.updateUserReferences(loggedinUser.username, newUsername, onComplete = {
+                                userViewModel.changeUsername(newUsername, loggedinUser.username)
                                 requireActivity().runOnUiThread {
                                     notificationsHandler.showChangedUsernameNotification()
                                     parentFragmentManager.popBackStack()

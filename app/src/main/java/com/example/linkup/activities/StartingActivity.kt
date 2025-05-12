@@ -35,7 +35,7 @@ class StartingActivity : AppCompatActivity() {
             insets
         }
 
-        // Requests notification permission on Android 13+
+        //Requests notification permission on Android 13+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(
@@ -75,7 +75,7 @@ class StartingActivity : AppCompatActivity() {
         }
     }
 
-    // Handles permission result
+    //Handles permission result
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }

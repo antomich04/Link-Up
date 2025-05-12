@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.linkup.R
 import com.example.linkup.activities.adapters.MessagesAdapter
 import com.example.linkup.activities.firestoreDB.Client
+import com.example.linkup.activities.notifications.NotificationsHandler
+import com.example.linkup.activities.notifications.NotificationsHandler.Companion.MESSAGES_CHANNEL_ID
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 
@@ -24,12 +26,12 @@ class ChatContainer : Fragment() {
     private lateinit var messageTxt : TextInputEditText
     private lateinit var sendMessageBtn : FloatingActionButton
     private lateinit var messagesAdapter: MessagesAdapter
-    private var lastOpenedTime: Long = 0
+    private lateinit var notificationsHandler: NotificationsHandler
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.chat_container, container, false)
 
-        arguments?.let{
+        arguments?.let {
             userUsername = it.getString("loggedInUser", "")
             friendUsername = it.getString("friendUser", "")
         }
@@ -38,6 +40,9 @@ class ChatContainer : Fragment() {
         toolbar?.setTitle(friendUsername)
 
         client = Client()
+
+        notificationsHandler = NotificationsHandler(requireContext())
+        notificationsHandler.createNotificationChannel(MESSAGES_CHANNEL_ID, "Messages", "This channel provides information about the user's received messages")
 
         messagesAdapter = MessagesAdapter(emptyList(), userUsername, client, requireContext())
         rvMessages = view.findViewById(R.id.rvMessages)
@@ -48,8 +53,7 @@ class ChatContainer : Fragment() {
             messagesAdapter.updateData(messages)
             rvMessages.scrollToPosition(messagesAdapter.itemCount-1)
 
-            lastOpenedTime = System.currentTimeMillis()
-            client.markMessagesAsSeen(userUsername, friendUsername, lastOpenedTime)
+            client.markMessagesAsSeen(userUsername, friendUsername)
         }
 
         messageTxt = view.findViewById(R.id.messageTxt)

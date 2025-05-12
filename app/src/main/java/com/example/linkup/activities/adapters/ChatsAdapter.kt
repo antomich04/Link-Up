@@ -12,7 +12,6 @@ import com.example.linkup.activities.firestoreDB.Chat
 import com.example.linkup.activities.fragments.ChatContainer
 import com.google.android.material.card.MaterialCardView
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 class ChatsAdapter(
@@ -46,12 +45,20 @@ class ChatsAdapter(
         private val cardView = view.findViewById<MaterialCardView>(R.id.cardView)
 
         fun bind(chat: Chat){
-            senderUsername.text = if (chat.sender == loggedinUsername) chat.receiver else chat.sender
-            lastMessage.text = chat.lastMessage
+            senderUsername.text = if(chat.sender == loggedinUsername) chat.receiver else chat.sender
+            lastMessage.text = chat.lastMessage ?: ""
 
-            val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
-            val formattedDate = formatter.format(Date(chat.timestamp))
-            timestamp.text = formattedDate
+            try {
+                val formattedDate = if(chat.timestamp != null){
+                    val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                    formatter.format(chat.timestamp!!.toDate())
+                }else{
+                    "Sending..."
+                }
+                timestamp.text = formattedDate
+            }catch(e: Exception){
+                timestamp.text = "Sending..."
+            }
 
             cardView.setOnClickListener{
                 val chatFragment = ChatContainer()

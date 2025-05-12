@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.linkup.R
@@ -38,6 +39,9 @@ class ChangePassword : Fragment() {
         newPasswordInputContainer = view.findViewById(R.id.newPasswordInputContainer)
         changePasswordBtn = view.findViewById(R.id.changePasswordBtn)
         client = Client()
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar?.setTitle("CHANGE PASSWORD")
 
         //Initializes Room Database + ViewModel
         val database = LocalDatabase.getDB(requireContext())

@@ -8,7 +8,7 @@ class ChatViewModel : ViewModel() {
     private val _chats = MutableLiveData<List<Chat>>(emptyList())
     val chats: LiveData<List<Chat>> get() = _chats
 
-    private val chatMap = mutableMapOf<String, Chat>()  // For efficient updates
+    private val chatMap = mutableMapOf<String, Chat>()  //For efficient updates
 
     fun addOrUpdateChat(chat: Chat) {
         chatMap[chat.id] = chat

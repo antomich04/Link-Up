@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.linkup.R
@@ -42,6 +43,9 @@ class AddFriend : Fragment(){
         friendUsernameTxt = view.findViewById(R.id.friendUsernameInput)
         usernameInputContainer = view.findViewById(R.id.usernameInputContainer)
         client = Client()
+
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+        toolbar?.setTitle("ADD FRIEND")
 
         notificationsHandler = NotificationsHandler(requireContext())
         notificationsHandler.createNotificationChannel(REQUESTS_CHANNEL_ID, "Requests", "This channel provides information about the user's friend requests")

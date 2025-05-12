@@ -12,7 +12,6 @@ import com.example.linkup.activities.firestoreDB.Message
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 class MessagesAdapter(
@@ -76,7 +75,9 @@ class MessagesAdapter(
         fun bind(message: Message){
             messageText.text = message.text
             val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
-            val formattedDate = formatter.format(Date(message.timestamp))
+            val formattedDate = message.timestamp?.toDate()?.let {
+                formatter.format(it)
+            } ?: "Sending..."
             messageTime.text = formattedDate
 
             if(seenTxt!=null){

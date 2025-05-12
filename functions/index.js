@@ -16,11 +16,10 @@ exports.sendFriendRequestNotification = onDocumentCreated(
 
     const receiverDoc = await admin.firestore().collection("Users").doc(receiverRef.id).get();
     const senderDoc = await admin.firestore().collection("Users").doc(senderRef.id).get();
-
     const receiverTokens = receiverDoc.data()?.tokens || [];
     const senderTokens = senderDoc.data()?.tokens || [];
 
-    // Filter out any tokens that belong to the sender
+    //Filters out any tokens that belong to the sender
     const tokensToNotify = receiverTokens.filter(token => !senderTokens.includes(token));
 
     if(tokensToNotify.length === 0){
@@ -41,7 +40,6 @@ exports.sendFriendRequestNotification = onDocumentCreated(
       ...payload,
       token
     }));
-
     await Promise.all(messages.map(msg => admin.messaging().send(msg)));
   }
 );
@@ -66,7 +64,7 @@ exports.sendFriendAcceptedNotification = onDocumentUpdated(
       const senderTokens = senderDoc.data()?.tokens || [];
       const receiverTokens = receiverDoc.data()?.tokens || [];
 
-      // Filter out tokens belonging to the receiver
+      //Filters out tokens belonging to the receiver
       const tokensToNotify = senderTokens.filter(token => !receiverTokens.includes(token));
 
       if(tokensToNotify.length === 0){
@@ -103,40 +101,80 @@ exports.sendMessageNotification = onDocumentCreated(
     }
 
     const message = snapshot.data();
-    const { sender, receiver, text } = message;
+    const { sender, receiver, text, timestamp, migrated } = message;
 
     if(!sender || !receiver || !text){
         return;
     }
 
-    const senderDoc = await admin.firestore().collection("Users").doc(sender).get();
-    const receiverDoc = await admin.firestore().collection("Users").doc(receiver).get();
-
-    const senderTokens = senderDoc.data()?.tokens || [];
-    const receiverTokens = receiverDoc.data()?.tokens || [];
-
-    //Filters out any tokens that belong to the sender
-    const tokensToNotify = receiverTokens.filter(token => !senderTokens.includes(token));
-
-    if(tokensToNotify.length === 0){
-      return;
+    if(migrated === true){
+        return;
     }
 
-    const payload = {
-      data: {
-        type: "new_message",
-        sender,
-        title: `New message from ${sender}`,
-        body: text,
-        target: "Chat"
-      }
-    };
 
-    const messages = tokensToNotify.map(token => ({
-      ...payload,
-      token
-    }));
+    if(timestamp){
+        const messageTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp._seconds * 1000);
+        const now = new Date();
+        const messageAgeMs = now - messageTime;
 
-    await Promise.all(messages.map(msg => admin.messaging().send(msg)));
+        if(messageAgeMs > 30000){  //30 seconds
+            return;
+        }
+    }
+
+    try{
+        //Query for users by username field instead of document ID
+        const senderQuery = await admin.firestore().collection("Users")
+            .where("username", "==", sender)
+            .limit(1)
+            .get();
+
+        const receiverQuery = await admin.firestore().collection("Users")
+            .where("username", "==", receiver)
+            .limit(1)
+            .get();
+
+        //Checks if users were found
+        if(senderQuery.empty || receiverQuery.empty){
+            return;
+        }
+
+        const senderData = senderQuery.docs[0].data();
+        const receiverData = receiverQuery.docs[0].data();
+
+        const senderTokens = senderData?.tokens || [];
+        const receiverTokens = receiverData?.tokens || [];
+
+        const tokensToNotify = receiverTokens.filter(token => !senderTokens.includes(token));
+
+        if(tokensToNotify.length === 0){
+          return;
+        }
+
+        const payload = {
+          data: {
+            type: "new_message",
+            sender: String(sender),
+            receiver: String(receiver),
+            title: `New message from ${sender}`,
+            body: text,
+            target: "Chat"
+          }
+        };
+
+        const messages = tokensToNotify.map(token => ({
+          ...payload,
+          token
+        }));
+
+        const sendResults = await Promise.all(
+            messages.map(msg => admin.messaging().send(msg).catch(error => {
+                return null;
+            }))
+        );
+
+    }catch(error) {
+        console.error('Error in sendMessageNotification function:', error);
+    }
   }
 );

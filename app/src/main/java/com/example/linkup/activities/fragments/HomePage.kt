@@ -54,8 +54,6 @@ class HomePage : Fragment() {
         chatViewModel = ViewModelProvider(this)[ChatViewModel::class.java]
         rvChats = view.findViewById(R.id.rvChats)
         rvChats.layoutManager = LinearLayoutManager(requireContext())
-        chatsAdapter = ChatsAdapter(emptyList(), "", parentFragmentManager)
-        rvChats.adapter = chatsAdapter
 
         lifecycleScope.launch {
             val loggedinUser = userViewModel.getLoggedInUser()

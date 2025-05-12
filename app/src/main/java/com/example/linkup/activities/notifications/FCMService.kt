@@ -15,10 +15,9 @@ class FCMService : FirebaseMessagingService() {
         super.onNewToken(token)
 
         client = Client()
-
         val sharedPref = getSharedPreferences("userPrefs", MODE_PRIVATE)
         val username = sharedPref.getString("loggedInUsername", null)
-        if (username != null) {
+        if(username != null){
             client.saveToken(username, token)
         }
     }
@@ -29,8 +28,10 @@ class FCMService : FirebaseMessagingService() {
             val title = data["title"]
             val body = data["body"]
             val target = data["target"]
+            val sender = data["sender"]
+            val receiver = data["receiver"]
 
-            val intent = NotificationRouter.createIntent(applicationContext, target)
+            val intent = NotificationRouter.createIntent(applicationContext, target, sender, receiver)
             val pendingIntent = PendingIntent.getActivity(
                 applicationContext,
                 0,
@@ -38,14 +39,18 @@ class FCMService : FirebaseMessagingService() {
                 PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-            //Uses different channels based on the target type
-            val channelId = when (target) {
+            val channelId = when(target){
                 "Chat" -> NotificationsHandler.MESSAGES_CHANNEL_ID
                 else -> NotificationsHandler.REQUESTS_CHANNEL_ID
             }
 
+            val smallIcon = when(target){
+                "Chat" -> R.drawable.new_message
+                else -> R.drawable.friends
+            }
+
             val notification = NotificationCompat.Builder(applicationContext, channelId)
-                .setSmallIcon(R.drawable.friends)
+                .setSmallIcon(smallIcon)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setContentIntent(pendingIntent)
